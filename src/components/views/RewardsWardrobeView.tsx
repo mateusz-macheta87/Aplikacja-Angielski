@@ -218,7 +218,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
                       playToneEffect('tap', soundEffectsEnabled);
                       onChangeStickerScene(sc.id);
                     }}
-                    className={`min-h-[38px] px-3.5 py-1 rounded-full text-xs font-bold transition-all ${
+                    className={`min-h-[44px] px-3.5 py-1 rounded-full text-xs font-bold transition-all ${
                       activeScene.id === sc.id
                         ? 'btn-puffy-amber'
                         : 'bg-[#FFF8EE] border border-[#EAD7BE] text-[#6E5B4F]'
@@ -311,7 +311,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
 
             {/* Panorama Helper Buttons */}
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs font-bold text-[#8A7465]">
+              <span className="text-xs font-bold text-[#755F51]">
                 Przyklejone na planszy: {placements.length}
               </span>
               <div className="flex flex-wrap gap-2">
@@ -319,7 +319,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
                   <button
                     type="button"
                     onClick={handleAutoArrange}
-                    className="btn-puffy-white min-h-[40px] px-4 rounded-full text-xs font-bold inline-flex items-center gap-1.5"
+                    className="btn-puffy-white min-h-[44px] px-4 rounded-full text-xs font-bold inline-flex items-center gap-1.5"
                   >
                     <Wand2 className="w-3.5 h-3.5 text-[#D9820B]" aria-hidden="true" />
                     Ułóż bajkowo
@@ -332,7 +332,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
                       playToneEffect('tap', soundEffectsEnabled);
                       onClearStickers();
                     }}
-                    className="btn-puffy-white min-h-[40px] px-4 rounded-full text-xs font-bold inline-flex items-center gap-1.5 text-[#9A5B0C]"
+                    className="btn-puffy-white min-h-[44px] px-4 rounded-full text-xs font-bold inline-flex items-center gap-1.5 text-[#9A5B0C]"
                   >
                     <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                     Wyczyść planszę
@@ -397,7 +397,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
                     <span className="mt-2 font-display text-sm font-bold text-[#3E2F2B] leading-tight">
                       {stk.title}
                     </span>
-                    <span className="mt-1 text-[11px] font-semibold text-[#8A7465] leading-snug">
+                    <span className="mt-1 text-[13px] font-semibold text-[#755F51] leading-snug">
                       {unlocked ? (placed ? 'Na planszy (zdejmij)' : 'Przyklej na planszę!') : stk.unlockHintPl}
                     </span>
                   </button>
@@ -485,7 +485,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
 
           {previewAccessories.length > 0 && (
             <div className="mt-4 w-full rounded-[20px] bg-[#FFF8EE] border border-[#EFE0CC] p-3">
-              <p className="text-[11px] font-bold text-[#8A7465] mb-2">
+              <p className="text-[13px] font-bold text-[#755F51] mb-2">
                 {isTryingOn ? 'Aktualnie przymierzony dodatek:' : 'Aktywny dodatek Iskierki:'}
               </p>
               <div className="flex flex-wrap items-center justify-center gap-2">
@@ -555,7 +555,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
               <Sparkles className="w-5 h-5 text-[#F4A938]" aria-hidden="true" />
               Bajkowy Butik Iskierki
             </h3>
-            <span className="text-xs font-bold text-[#8A7465] tabular-nums">
+            <span className="text-xs font-bold text-[#755F51] tabular-nums">
               Posiadane: {progress.ownedAccessories.length} / {WARDROBE_ACCESSORIES.length}
             </span>
           </div>
@@ -563,7 +563,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
           <div
             role="tablist"
             aria-label="Kategorie dodatków w garderobie"
-            className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-4"
+            className="flex flex-wrap items-center gap-1.5 pb-2 mb-4"
           >
             {SLOT_FILTERS.map((f) => {
               const active = slotFilter === f.id;
@@ -574,7 +574,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
                   role="tab"
                   aria-selected={active}
                   onClick={() => setSlotFilter(f.id)}
-                  className={`min-h-[38px] px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all ${
+                  className={`min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all ${
                     active
                       ? 'btn-puffy-amber'
                       : 'bg-[#FFF8EE] border border-[#EAD7BE] text-[#6E5B4F] hover:border-[#D6B892]'
@@ -653,7 +653,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
                         )}
                       </span>
 
-                      <span className="absolute bottom-2 right-2.5 w-7 h-7 rounded-full bg-[#FFFDF8]/90 border border-[#EAE0D2] flex items-center justify-center text-[#5496E8] opacity-85 group-hover:opacity-100">
+                      <span className="absolute bottom-2 right-2.5 w-7 h-7 rounded-full bg-[#FFFDF8]/90 border border-[#EAE0D2] flex items-center justify-center text-[#2F6DB5] opacity-85 group-hover:opacity-100">
                         <Volume2 className="w-3.5 h-3.5" aria-hidden="true" />
                       </span>
                     </button>
@@ -661,7 +661,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
                     <h4 className="font-display text-base font-bold text-[#3E2F2B] leading-snug">
                       {acc.namePl}
                     </h4>
-                    <p className="text-xs font-bold text-[#4178BF] mt-0.5">
+                    <p className="text-xs font-bold text-[#2F6DB5] mt-0.5">
                       {acc.englishName} · <span className="text-[#9A8577] font-semibold">{acc.slotLabelPl}</span>
                     </p>
                     <p className="mt-1.5 text-xs font-semibold text-[#786356] leading-relaxed">
@@ -696,7 +696,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
                         type="button"
                         onClick={() => handleToggleTryOn(acc)}
                         aria-pressed={tryingThis}
-                        className={`min-h-[42px] px-2 rounded-full font-display text-xs font-bold inline-flex items-center justify-center gap-1 whitespace-nowrap ${
+                        className={`min-h-[44px] px-2 rounded-full font-display text-xs font-bold inline-flex items-center justify-center gap-1 whitespace-nowrap ${
                           tryingThis ? 'btn-puffy-blue' : 'btn-puffy-white'
                         }`}
                       >
@@ -705,7 +705,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
                       </button>
 
                       {acc.secretTreasureOnly ? (
-                        <span className="min-h-[42px] px-2 rounded-full bg-[#FEF7DC] border border-[#F3DFA2] text-[#92400E] font-display text-[11px] font-bold flex items-center justify-center text-center leading-tight">
+                        <span className="min-h-[44px] px-2 rounded-full bg-[#FEF7DC] border border-[#F3DFA2] text-[#92400E] font-display text-[13px] font-bold flex items-center justify-center text-center leading-tight">
                           Ze Skrzyni Skarbów
                         </span>
                       ) : (
@@ -717,7 +717,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
                             setTryOnId(null);
                             onBuyAccessory(acc.id, acc.priceStars);
                           }}
-                          className={`min-h-[42px] px-2 rounded-full font-display text-xs font-bold whitespace-nowrap tabular-nums ${
+                          className={`min-h-[44px] px-2 rounded-full font-display text-xs font-bold whitespace-nowrap tabular-nums ${
                             canAfford
                               ? 'btn-puffy-amber'
                               : 'bg-[#F0E6D8] text-[#9A897A] cursor-not-allowed'
@@ -758,7 +758,7 @@ export const RewardsWardrobeView: React.FC<RewardsWardrobeViewProps> = ({
             <h3 id="postcard-modal-title" className="font-display text-2xl font-bold text-[#3E2F2B]">
               Pocztówka Iskierki gotowa!
             </h3>
-            <p className="mt-1 text-sm font-bold text-[#4178BF]">
+            <p className="mt-1 text-sm font-bold text-[#2F6DB5]">
               „{postcardModal.captionEn}”
             </p>
 

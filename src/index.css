@@ -4,6 +4,11 @@
   --font-display: "Fredoka", ui-rounded, ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Nunito", ui-rounded, ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Smallest text step raised from 12px to 13px: the app is read by
+     8-year-olds holding an iPad at lap distance. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: calc(1.125 / 0.8125);
 }
 
 @layer base {
@@ -11,6 +16,13 @@
     font-family: var(--font-sans);
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+  }
+
+  /* Minimum touch target for small fingers (WCAG 2.5.5 / Apple HIG: 44pt). */
+  button,
+  [role="button"],
+  select {
+    min-height: 44px;
   }
 
   h1, h2, h3, .font-display {
@@ -194,4 +206,17 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Single-object illustrations have their paper background keyed to pure white
+   (see scripts/whiten-illustration-bg.py). Multiplying them onto whatever card
+   or well they sit in makes that white take the card's exact colour, so no
+   "square inside a square" shows, whatever the card tint. Full scenes
+   (map, comic panels, portraits) are left untouched. */
+img:is(
+  [src*="/icon_"], [src*="/item_"], [src*="/acc_"], [src*="/season_"],
+  [src*="/sort_"], [src*="/weather_"], [src*="/game_"], [src*="/treasure_"],
+  [src*="/mascot_"], [src*="/iskierka_wear_"]
+) {
+  mix-blend-mode: multiply;
 }

@@ -198,7 +198,7 @@ export const ComicStoryView: React.FC<ComicStoryViewProps> = ({
                       <Volume2 className="w-5 h-5" aria-hidden="true" />
                     </span>
                     <div className="min-w-0">
-                      <span className="block text-[11px] font-bold text-[#8A7465]">
+                      <span className="block text-[13px] font-bold text-[#755F51]">
                         {panel.speaker} mówi:
                       </span>
                       <span className="block font-display text-base sm:text-lg font-bold text-[#3E2F2B] leading-snug">
@@ -237,7 +237,7 @@ export const ComicStoryView: React.FC<ComicStoryViewProps> = ({
                 <p className="font-display text-lg font-bold text-[#3E2F2B]">
                   Letni piknik z lodami!
                 </p>
-                <p className="text-xs font-bold text-[#4178BF] mt-1">
+                <p className="text-xs font-bold text-[#2F6DB5] mt-1">
                   „It&apos;s sunny and hot! Let&apos;s eat ice cream in the park!”
                 </p>
               </button>
@@ -254,7 +254,7 @@ export const ComicStoryView: React.FC<ComicStoryViewProps> = ({
                 <p className="font-display text-lg font-bold text-[#3E2F2B]">
                   Zimowa uczta z ciepłą zupą!
                 </p>
-                <p className="text-xs font-bold text-[#4178BF] mt-1">
+                <p className="text-xs font-bold text-[#2F6DB5] mt-1">
                   „It&apos;s snowy and cold! Let&apos;s eat warm soup in the house!”
                 </p>
               </button>

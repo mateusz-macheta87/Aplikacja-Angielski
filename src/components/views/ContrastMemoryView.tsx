@@ -189,10 +189,10 @@ export const ContrastMemoryView: React.FC<ContrastMemoryViewProps> = ({
             <button
               type="button"
               onClick={() => setSubMode('sorting')}
-              className={`min-h-[38px] px-3.5 py-1 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${
+              className={`min-h-[44px] px-3.5 py-1 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${
                 subMode === 'sorting'
                   ? 'bg-white text-[#3E2F2B] shadow-sm'
-                  : 'text-[#8A7465] hover:text-[#3E2F2B]'
+                  : 'text-[#755F51] hover:text-[#3E2F2B]'
               }`}
             >
               Pory roku
@@ -200,10 +200,10 @@ export const ContrastMemoryView: React.FC<ContrastMemoryViewProps> = ({
             <button
               type="button"
               onClick={() => setSubMode('memory')}
-              className={`min-h-[38px] px-3.5 py-1 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${
+              className={`min-h-[44px] px-3.5 py-1 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${
                 subMode === 'memory'
                   ? 'bg-white text-[#3E2F2B] shadow-sm'
-                  : 'text-[#8A7465] hover:text-[#3E2F2B]'
+                  : 'text-[#755F51] hover:text-[#3E2F2B]'
               }`}
             >
               Audio Memory
@@ -258,7 +258,7 @@ export const ContrastMemoryView: React.FC<ContrastMemoryViewProps> = ({
         ) : (
           <div className="space-y-5">
             <div className="storybook-card rounded-[30px] p-6 sm:p-8 text-center">
-              <p className="text-xs font-bold text-[#8A7465] tabular-nums">
+              <p className="text-xs font-bold text-[#755F51] tabular-nums">
                 Karta {sortIdx + 1} / {sortingItems.length} · Wynik: {sortCorrect}
               </p>
               <p className="mt-1 text-base font-bold text-[#6E5B4F]">
@@ -276,7 +276,7 @@ export const ContrastMemoryView: React.FC<ContrastMemoryViewProps> = ({
               <h2 className="mt-4 font-display text-3xl font-bold text-[#3E2F2B]">
                 {currentSortItem.word}
               </h2>
-              <p className="mt-1 text-sm font-bold text-[#8A7465]">
+              <p className="mt-1 text-sm font-bold text-[#755F51]">
                 {currentSortItem.translation}
               </p>
 
@@ -344,7 +344,7 @@ export const ContrastMemoryView: React.FC<ContrastMemoryViewProps> = ({
           <div className="storybook-card rounded-[26px] px-5 py-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="font-display text-xl font-bold text-[#3E2F2B]">Audio Memory</h2>
-              <p className="text-xs font-semibold text-[#8A7465]">
+              <p className="text-xs font-semibold text-[#755F51]">
                 Odkrywaj po dwie karty — każda karta wypowiada swoje słówko na głos!
               </p>
             </div>
@@ -360,7 +360,7 @@ export const ContrastMemoryView: React.FC<ContrastMemoryViewProps> = ({
                   setMoves(0);
                   setLockBoard(false);
                 }}
-                className="btn-puffy-white min-h-[40px] px-3.5 rounded-full inline-flex items-center gap-1.5 text-xs font-bold"
+                className="btn-puffy-white min-h-[44px] px-3.5 rounded-full inline-flex items-center gap-1.5 text-xs font-bold"
               >
                 <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
                 Nowe karty

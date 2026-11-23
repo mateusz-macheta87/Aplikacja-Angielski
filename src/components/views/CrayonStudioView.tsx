@@ -151,10 +151,10 @@ export const CrayonStudioView: React.FC<CrayonStudioViewProps> = ({
               setFeedback(null);
               setSolvedCurrent(false);
             }}
-            className={`min-h-[38px] px-3.5 py-1 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${
+            className={`min-h-[44px] px-3.5 py-1 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${
               mode === 'challenge'
                 ? 'bg-white text-[#3E2F2B] shadow-sm'
-                : 'text-[#8A7465] hover:text-[#3E2F2B]'
+                : 'text-[#755F51] hover:text-[#3E2F2B]'
             }`}
           >
             Zadania
@@ -166,10 +166,10 @@ export const CrayonStudioView: React.FC<CrayonStudioViewProps> = ({
               setPartColors({});
               setFeedback(null);
             }}
-            className={`min-h-[38px] px-3.5 py-1 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${
+            className={`min-h-[44px] px-3.5 py-1 rounded-full text-xs font-bold transition-colors whitespace-nowrap ${
               mode === 'sandbox'
                 ? 'bg-white text-[#3E2F2B] shadow-sm'
-                : 'text-[#8A7465] hover:text-[#3E2F2B]'
+                : 'text-[#755F51] hover:text-[#3E2F2B]'
             }`}
           >
             Swobodne
@@ -220,7 +220,7 @@ export const CrayonStudioView: React.FC<CrayonStudioViewProps> = ({
           {/* Left Stage: Interactive Character Canvas */}
           <section className="lg:col-span-6 storybook-card rounded-[30px] p-6 flex flex-col items-center">
             <div className="w-full flex items-center justify-between gap-2 mb-2">
-              <p className="text-xs font-bold text-[#8A7465]">
+              <p className="text-xs font-bold text-[#755F51]">
                 {mode === 'challenge'
                   ? `Zadanie ${idx + 1} z ${challenges.length} · Stuknij lub zamaluj palcem`
                   : 'Tryb swobodny · Stuknij lub zamaluj palcem'}
@@ -262,7 +262,7 @@ export const CrayonStudioView: React.FC<CrayonStudioViewProps> = ({
           <section className="lg:col-span-6 space-y-5">
             {mode === 'challenge' ? (
               <div className="storybook-card rounded-[30px] p-6">
-                <p className="text-xs font-bold text-[#8A7465]">
+                <p className="text-xs font-bold text-[#755F51]">
                   Posłuchaj polecenia i pokoloruj odpowiednie ubranie
                 </p>
                 <h2 className="mt-2 font-display text-2xl sm:text-3xl font-bold text-[#3E2F2B]">
@@ -288,10 +288,10 @@ export const CrayonStudioView: React.FC<CrayonStudioViewProps> = ({
               </div>
             ) : (
               <div className="storybook-card rounded-[30px] p-6">
-                <p className="text-xs font-bold text-[#8A7465]">
+                <p className="text-xs font-bold text-[#755F51]">
                   Twoje zdanie po angielsku
                 </p>
-                <h2 className="mt-2 font-display text-2xl font-bold text-[#4178BF]">
+                <h2 className="mt-2 font-display text-2xl font-bold text-[#2F6DB5]">
                   {sandboxSentence}
                 </h2>
                 <button
@@ -343,7 +343,7 @@ export const CrayonStudioView: React.FC<CrayonStudioViewProps> = ({
                         <span className="block font-display text-sm font-bold text-[#3E2F2B] leading-tight">
                           {crayon.name}
                         </span>
-                        <span className="block text-[10.5px] font-semibold text-[#8A7465] leading-tight mt-0.5">
+                        <span className="block text-[10.5px] font-semibold text-[#755F51] leading-tight mt-0.5">
                           {crayon.labelPl}
                         </span>
                       </div>
@@ -352,7 +352,7 @@ export const CrayonStudioView: React.FC<CrayonStudioViewProps> = ({
                 })}
               </div>
 
-              <p className="mt-4 text-xs font-semibold text-[#8A7465]">
+              <p className="mt-4 text-xs font-semibold text-[#755F51]">
                 2. Teraz stuknij odpowiednie ubranie na Panu Chrząszczu po lewej!
               </p>
             </div>

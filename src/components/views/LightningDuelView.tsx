@@ -227,10 +227,10 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setDuelLayout('tabletop180')}
-                  className={`min-h-[40px] px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                  className={`min-h-[44px] px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
                     duelLayout === 'tabletop180'
                       ? 'bg-white text-[#3E2F2B] shadow-sm'
-                      : 'text-[#8A7465]'
+                      : 'text-[#755F51]'
                   }`}
                 >
                   Przy stole (180°)
@@ -238,10 +238,10 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setDuelLayout('turns')}
-                  className={`min-h-[40px] px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                  className={`min-h-[44px] px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
                     duelLayout === 'turns'
                       ? 'bg-white text-[#3E2F2B] shadow-sm'
-                      : 'text-[#8A7465]'
+                      : 'text-[#755F51]'
                   }`}
                 >
                   Na zmianę
@@ -249,12 +249,12 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
               </div>
 
               {duelLayout === 'tabletop180' && (
-                <label className="flex items-center justify-center gap-2.5 text-xs sm:text-sm font-bold text-[#6E5B4F] cursor-pointer">
+                <label className="flex items-center justify-center gap-2.5 min-h-[44px] text-xs sm:text-sm font-bold text-[#6E5B4F] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={fairHandicap}
                     onChange={(e) => setFairHandicap(e.target.checked)}
-                    className="w-4 h-4 accent-[#55B373] rounded"
+                    className="w-6 h-6 accent-[#55B373] rounded"
                   />
                   <ShieldCheck className="w-4 h-4 text-[#55B373]" aria-hidden="true" />
                   Wyrównanie szans (+0,8 s przewagi dla córki)
@@ -343,7 +343,7 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
             <span className="font-display text-lg font-bold text-[#3E2F2B]">
               „{current.spokenText}”
             </span>
-            <span className="text-xs font-bold text-[#5496E8]">
+            <span className="text-xs font-bold text-[#2F6DB5]">
               {parentLocked ? 'Chwileczkę...' : 'Twój ruch!'}
             </span>
           </div>
@@ -385,7 +385,7 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
           <button
             type="button"
             onClick={onBackToMap}
-            className="btn-puffy-white min-h-[40px] px-3.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5"
+            className="btn-puffy-white min-h-[44px] px-3.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5"
           >
             <ArrowLeft className="w-4 h-4" aria-hidden="true" />
             Mapa
@@ -395,7 +395,7 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
             <span className="px-3 py-1 rounded-full bg-[#FCE8EE] text-[#9D2A52]">
               Córka {p1Score}
             </span>
-            <span className="text-xs text-[#8A7465]">
+            <span className="text-xs text-[#755F51]">
               Runda {idx + 1} / {questions.length}
             </span>
             <span className="px-3 py-1 rounded-full bg-[#E5F2FE] text-[#2A5E9E]">
@@ -406,7 +406,7 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
           <button
             type="button"
             onClick={() => speakText(current.spokenText, { lang: module.speechLang })}
-            className="btn-puffy-blue min-h-[40px] px-4 rounded-full text-xs font-bold inline-flex items-center gap-1.5"
+            className="btn-puffy-blue min-h-[44px] px-4 rounded-full text-xs font-bold inline-flex items-center gap-1.5"
           >
             <Volume2 className="w-4 h-4" aria-hidden="true" />
             Powtórz
@@ -492,7 +492,7 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
               className={`px-3.5 py-1.5 rounded-full border-2 ${
                 currentPlayer === 1
                   ? 'bg-[#FCE8EE] border-[#E05A88] text-[#9D2A52]'
-                  : 'bg-white border-[#EFE2D2] text-[#8A7465]'
+                  : 'bg-white border-[#EFE2D2] text-[#755F51]'
               }`}
             >
               Córka: {p1Score}
@@ -501,7 +501,7 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
               className={`px-3.5 py-1.5 rounded-full border-2 ${
                 currentPlayer === 2
                   ? 'bg-[#E5F2FE] border-[#5496E8] text-[#2A5E9E]'
-                  : 'bg-white border-[#EFE2D2] text-[#8A7465]'
+                  : 'bg-white border-[#EFE2D2] text-[#755F51]'
               }`}
             >
               Rodzic: {p2Score}

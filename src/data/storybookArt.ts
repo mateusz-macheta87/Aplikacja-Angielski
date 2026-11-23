@@ -129,7 +129,6 @@ export const ITEM_ART_MAP: Partial<Record<IllustrationKey, ItemArtEntry>> = {
   jumper: {
     src: assetUrl('src/assets/images/item_yellow_jumper_1795433268419.webp'),
     altPl: 'Żółty sweter',
-    zoomClass: 'scale-[1.14]',
   },
   skirt: {
     src: assetUrl('src/assets/images/item_pink_skirt_1795433266456.webp'),

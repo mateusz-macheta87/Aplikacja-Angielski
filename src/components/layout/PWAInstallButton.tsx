@@ -48,7 +48,7 @@ export const PWAInstallButton: React.FC = () => {
                 type="button"
                 onClick={() => setShowGuide(false)}
                 aria-label="Zamknij instrukcję instalacji"
-                className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"
+                className="min-h-[44px] min-w-[40px] flex items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100"
               >
                 <X className="w-5 h-5" />
               </button>

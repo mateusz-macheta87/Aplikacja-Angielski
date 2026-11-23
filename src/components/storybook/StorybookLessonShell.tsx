@@ -98,13 +98,13 @@ export const StorybookLessonShell: React.FC<StorybookLessonShellProps> = ({
                 <h2 id="cheatsheet-title" className="font-display text-2xl font-bold text-[#3E2F2B]">
                   Ściągawka Iskierki
                 </h2>
-                <p className="text-xs font-semibold text-[#8A7465]">{module.title}</p>
+                <p className="text-xs font-semibold text-[#755F51]">{module.title}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setCheatOpen(false)}
                 aria-label="Zamknij ściągawkę"
-                className="min-h-[42px] min-w-[42px] rounded-full bg-[#F5ECE0] text-[#3E2F2B] flex items-center justify-center hover:bg-[#EBDCC8]"
+                className="min-h-[44px] min-w-[42px] rounded-full bg-[#F5ECE0] text-[#3E2F2B] flex items-center justify-center hover:bg-[#EBDCC8]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -144,10 +144,10 @@ export const StorybookLessonShell: React.FC<StorybookLessonShellProps> = ({
                     />
                     <span className="min-w-0 truncate">
                       <strong className="text-[#3E2F2B]">{v.word}</strong>{' '}
-                      <span className="text-xs text-[#8A7465]">— {v.translation}</span>
+                      <span className="text-xs text-[#755F51]">— {v.translation}</span>
                     </span>
                   </div>
-                  <Volume2 className="w-4 h-4 text-[#5496E8] shrink-0" aria-hidden="true" />
+                  <Volume2 className="w-4 h-4 text-[#2F6DB5] shrink-0" aria-hidden="true" />
                 </button>
               ))}
             </div>

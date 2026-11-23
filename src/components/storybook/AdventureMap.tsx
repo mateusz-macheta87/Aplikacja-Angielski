@@ -413,7 +413,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                   <span className="block font-display text-sm font-bold text-[#3E2F2B] leading-tight whitespace-nowrap">
                     {stop.titleEn}
                   </span>
-                  <span className="block text-[11px] font-semibold text-[#8A7465] leading-tight">
+                  <span className="block text-[13px] font-semibold text-[#755F51] leading-tight">
                     {stop.subtitlePl}
                   </span>
                   <div className="mt-0.5 flex items-center justify-center gap-0.5">
@@ -471,7 +471,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
               <span className="block font-display text-sm font-bold text-[#3E2F2B] leading-tight">
                 Treasure
               </span>
-              <span className="block text-[11px] font-semibold text-[#8A7465] leading-tight">
+              <span className="block text-[13px] font-semibold text-[#755F51] leading-tight">
                 {progress.treasureClaimed
                   ? 'otwarta!'
                   : treasureUnlocked
@@ -513,7 +513,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                 <span className="mt-2 font-display text-sm font-bold text-[#3E2F2B]">
                   {stop.titleEn}
                 </span>
-                <span className="text-xs text-[#8A7465]">{stop.subtitlePl}</span>
+                <span className="text-xs text-[#755F51]">{stop.subtitlePl}</span>
                 <div className="mt-1 flex gap-0.5">
                   {[1, 2, 3].map((s) => (
                     <Star
@@ -541,7 +541,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
               className="w-16 h-16 rounded-full object-cover"
             />
             <span className="mt-2 font-display text-sm font-bold text-[#3E2F2B]">Treasure</span>
-            <span className="text-xs text-[#8A7465]">
+            <span className="text-xs text-[#755F51]">
               {progress.treasureClaimed ? 'otwarta!' : treasureUnlocked ? 'otwórz!' : 'zamknięta'}
             </span>
           </button>
@@ -617,7 +617,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                       />
                     </div>
                     <div className="min-w-0">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#B86E14]">
+                      <span className="inline-flex items-center gap-1 text-[13px] font-bold text-[#B86E14]">
                         <Award className="w-3.5 h-3.5" aria-hidden="true" />
                         Sekretny dodatek odblokowany!
                       </span>

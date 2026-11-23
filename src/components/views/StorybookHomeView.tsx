@@ -128,7 +128,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
             <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#3E2F2B]">
               {isEnglishClothes ? 'English with Iskierka' : activeModule.title}
             </h1>
-            <p className="text-sm font-semibold text-[#8A7465]">
+            <p className="text-sm font-semibold text-[#755F51]">
               {isEnglishClothes
                 ? 'Angielski · klasa 2 · Unit 1: clothes, seasons, weather'
                 : `${activeModule.subjectLabel} · ${activeModule.gradeLevel}`}
@@ -159,7 +159,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
             className="btn-puffy-white min-h-[46px] min-w-[46px] rounded-full flex items-center justify-center text-[#3E2F2B]"
           >
             {soundEffectsEnabled ? (
-              <Volume2 className="w-5 h-5 text-[#5496E8]" aria-hidden="true" />
+              <Volume2 className="w-5 h-5 text-[#2F6DB5]" aria-hidden="true" />
             ) : (
               <VolumeX className="w-5 h-5 text-[#A89687]" aria-hidden="true" />
             )}
@@ -193,7 +193,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5">
           <div className="flex flex-wrap items-baseline gap-2.5">
             <h2 className="font-display text-xl font-bold text-[#3E2F2B]">Mój kalendarz</h2>
-            <span className="text-sm font-semibold text-[#8A7465]">
+            <span className="text-sm font-semibold text-[#755F51]">
               {todayDone
                 ? 'Dzisiejsze zadanie zaliczone — brawo!'
                 : 'Zrób zadanie dnia i zacznij serię!'}
@@ -206,7 +206,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
                 playToneEffect('tap', soundEffectsEnabled);
                 onOpenScreen({ type: 'warmup' });
               }}
-              className="btn-puffy-amber min-h-[40px] px-4 py-1.5 rounded-full font-display text-xs sm:text-sm font-bold whitespace-nowrap"
+              className="btn-puffy-amber min-h-[44px] px-4 py-1.5 rounded-full font-display text-xs sm:text-sm font-bold whitespace-nowrap"
             >
               3-min rozgrzewka przed sprawdzianem
             </button>
@@ -220,7 +220,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
                   dailyMode: true,
                 });
               }}
-              className="text-sm font-bold text-[#5496E8] hover:underline whitespace-nowrap px-2"
+              className="text-sm font-bold text-[#2F6DB5] hover:underline whitespace-nowrap px-2"
             >
               Zadanie dnia →
             </button>
@@ -239,7 +239,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
                     : 'bg-[#FAF5EE] border border-[#F0E5D7]'
               }`}
             >
-              <span className="text-xs font-bold text-[#8A7465]">{day.weekdayShort}</span>
+              <span className="text-xs font-bold text-[#755F51]">{day.weekdayShort}</span>
               <span className="mt-0.5 font-display text-lg font-bold text-[#3E2F2B] tabular-nums">
                 {day.dayNumber}
               </span>
@@ -291,7 +291,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Słowniczek obrazkowy
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
+              <p className="mt-1 text-xs font-semibold text-[#755F51]">
                 Picture dictionary: posłuchaj słówek
               </p>
             </div>
@@ -317,7 +317,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Zadanie dnia
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
+              <p className="mt-1 text-xs font-semibold text-[#755F51]">
                 5 szybkich zadań za gwiazdki
               </p>
             </div>
@@ -345,7 +345,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Błyskawica
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465] tabular-nums">
+              <p className="mt-1 text-xs font-semibold text-[#755F51] tabular-nums">
                 {progress.bestLightningScore > 0
                   ? `Rekord: ${progress.bestLightningScore} pkt w minutę!`
                   : 'Ile zrobisz w minutę?'}
@@ -405,7 +405,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Pojedynek
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
+              <p className="mt-1 text-xs font-semibold text-[#755F51]">
                 Zagraj z rodzicem na iPadzie!
               </p>
             </div>
@@ -433,7 +433,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Album naklejek
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465] tabular-nums">
+              <p className="mt-1 text-xs font-semibold text-[#755F51] tabular-nums">
                 {unlockedStickerCount} z {STICKERS_CATALOG.length} naklejek
               </p>
             </div>
@@ -457,7 +457,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Garderoba Iskierki
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465] tabular-nums">
+              <p className="mt-1 text-xs font-semibold text-[#755F51] tabular-nums">
                 {formatStarsPl(availableStars)} do wydania
               </p>
             </div>
@@ -485,7 +485,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Audio Memory
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
+              <p className="mt-1 text-xs font-semibold text-[#755F51]">
                 Odkrywaj pary i słuchaj słówek
               </p>
             </div>
@@ -513,7 +513,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Powiedz z Iskierką!
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
+              <p className="mt-1 text-xs font-semibold text-[#755F51]">
                 Nagraj głos i posłuchaj duszka
               </p>
             </div>
@@ -541,7 +541,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Bajkowy komiks
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
+              <p className="mt-1 text-xs font-semibold text-[#755F51]">
                 Historyjka z mówiącymi dymkami
               </p>
             </div>
@@ -621,7 +621,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
                 id="parent-quick-module"
                 value={activeModule.id}
                 onChange={(e) => onSelectModule(e.target.value)}
-                className="min-h-[40px] w-full sm:w-auto max-w-full min-w-0 rounded-full border border-[#E2CA86] bg-white px-3.5 py-1.5 text-xs font-bold text-[#4E3818]"
+                className="min-h-[44px] w-full sm:w-auto max-w-full min-w-0 rounded-full border border-[#E2CA86] bg-white px-3.5 py-1.5 text-xs font-bold text-[#4E3818]"
               >
                 {modules.map((m) => (
                   <option key={m.id} value={m.id}>
