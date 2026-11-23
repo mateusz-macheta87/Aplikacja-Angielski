@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fredoka", ui-rounded, ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Nunito", ui-rounded, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* Warm fairytale parchment canvas with soft golden sunlit watercolor glow */
+.storybook-canvas {
+  background-color: #FFF7EC;
+  background-image:
+    radial-gradient(ellipse 90% 420px at 50% 0%, rgba(254, 232, 189, 0.55) 0%, rgba(255, 247, 236, 0) 70%),
+    radial-gradient(ellipse 60% 340px at 10% 35%, rgba(253, 224, 233, 0.35) 0%, rgba(255, 247, 236, 0) 65%),
+    radial-gradient(ellipse 60% 340px at 92% 65%, rgba(219, 240, 254, 0.38) 0%, rgba(255, 247, 236, 0) 65%),
+    radial-gradient(#E8D3B7 1.25px, transparent 1.25px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 26px 26px;
+}
+
+/* Warm storybook paper card with gentle honey-gold rim */
+.storybook-card {
+  background-color: #FFFDF8;
+  border: 2px solid #EEDBC4;
+  box-shadow:
+    0 8px 24px rgba(133, 94, 58, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Watercolor illustration picture-book frame (seamlessly blends ivory #FFF8EE art) */
+.watercolor-frame {
+  background-color: #FFF8EE;
+  border: 2px solid #EEDAC1;
+  box-shadow: inset 0 2px 6px rgba(164, 120, 74, 0.08);
+}
+
+.btn-puffy-blue {
+  background: linear-gradient(180deg, #62A3F2 0%, #4C8EE0 100%);
+  color: #FFFFFF;
+  border-bottom: 4px solid #3570BA;
+  box-shadow: 0 4px 12px rgba(76, 142, 224, 0.24);
+  transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1), filter 140ms ease;
+}
+.btn-puffy-blue:hover {
+  filter: brightness(1.04);
+}
+.btn-puffy-blue:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.btn-puffy-green {
+  background: linear-gradient(180deg, #62C280 0%, #4DA96A 100%);
+  color: #FFFFFF;
+  border-bottom: 4px solid #34844E;
+  box-shadow: 0 4px 12px rgba(77, 169, 106, 0.24);
+  transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1), filter 140ms ease;
+}
+.btn-puffy-green:hover {
+  filter: brightness(1.04);
+}
+.btn-puffy-green:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.btn-puffy-amber {
+  background: linear-gradient(180deg, #FBC152 0%, #F2A430 100%);
+  color: #422B16;
+  border-bottom: 4px solid #CC7D14;
+  box-shadow: 0 4px 12px rgba(242, 164, 48, 0.26);
+  transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1), filter 140ms ease;
+}
+.btn-puffy-amber:hover {
+  filter: brightness(1.03);
+}
+.btn-puffy-amber:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.btn-puffy-white {
+  background-color: #FFFDF9;
+  color: #423026;
+  border: 2px solid #EBDAC5;
+  border-bottom: 4px solid #D9C3A8;
+  transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1), background-color 140ms ease, border-color 140ms ease;
+}
+.btn-puffy-white:hover {
+  background-color: #FFF8EC;
+  border-color: #D7BC9C;
+}
+.btn-puffy-white:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

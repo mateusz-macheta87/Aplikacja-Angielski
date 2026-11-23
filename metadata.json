@@ -1,0 +1,6 @@
+{
+  "name": "LingoPlay — Interaktywna Nauka na Sprawdzian",
+  "description": "Modułowa, multimedialna aplikacja edukacyjna na iPada do nauki słownictwa, gramatyki i słuchania z języka angielskiego oraz innych przedmiotów.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
