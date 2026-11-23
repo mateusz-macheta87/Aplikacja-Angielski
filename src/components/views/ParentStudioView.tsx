@@ -164,6 +164,12 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
         setAiError(data.error || 'Wpisz PIN rodzica, aby uruchomić analizę zdjęcia.');
         return;
       }
+      if (resp.status === 404 || resp.status === 405) {
+        setAiError(
+          'Kreator AI ze zdjęć wymaga serwera backendowego (na statycznym podglądzie GitHub Pages działają wszystkie gry, lektor offline, ręczny edytor oraz import JSON).'
+        );
+        return;
+      }
       if (!resp.ok || !data.module) {
         setAiError(data.error || 'Nie udało się utworzyć modułu ze zdjęcia.');
         return;

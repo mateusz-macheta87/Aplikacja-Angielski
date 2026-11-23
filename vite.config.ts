@@ -6,7 +6,11 @@ import {defineConfig} from 'vite';
 import {VitePWA} from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
+  const rawBase = process.env.VITE_BASE_PATH || '/';
+  const base = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
+
   return {
+    base,
     plugins: [
       react(),
       tailwindcss(),
@@ -14,7 +18,7 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         includeAssets: ['icon.svg', 'apple-touch-icon.png'],
         manifest: {
-          id: '/',
+          id: base,
           name: 'LingoPlay — Interaktywna Nauka',
           short_name: 'LingoPlay',
           description: 'Interaktywna aplikacja edukacyjna na iPada do nauki języków i innych przedmiotów.',
@@ -22,23 +26,23 @@ export default defineConfig(() => {
           background_color: '#FFF9F0',
           display: 'standalone',
           orientation: 'any',
-          start_url: '/',
-          scope: '/',
+          start_url: base,
+          scope: base,
           icons: [
             {
-              src: '/pwa-192x192.png',
+              src: 'pwa-192x192.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/pwa-512x512.png',
+              src: 'pwa-512x512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/pwa-maskable-512x512.png',
+              src: 'pwa-maskable-512x512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',

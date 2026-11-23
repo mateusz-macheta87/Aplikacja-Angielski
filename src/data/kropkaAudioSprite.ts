@@ -7,11 +7,13 @@
 
 export type AudioSpriteId = 'main' | 'node1' | 'node2' | 'node3';
 
+const BASE = ((import.meta as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '/').replace(/\/?$/, '/');
+
 export const AUDIO_SPRITE_URLS: Record<AudioSpriteId, string> = {
-  main: '/assets/aistudio/kropka_sprite_bcc8b847.mp3',
-  node1: '/assets/aistudio/New_tts_node1_4e1c5dd3.mp3',
-  node2: '/assets/aistudio/New_tts_node2_82bc5b9d.mp3',
-  node3: '/assets/aistudio/New_tts_node3_7e263853.mp3',
+  main: `${BASE}assets/aistudio/kropka_sprite_bcc8b847.mp3`,
+  node1: `${BASE}assets/aistudio/New_tts_node1_4e1c5dd3.mp3`,
+  node2: `${BASE}assets/aistudio/New_tts_node2_82bc5b9d.mp3`,
+  node3: `${BASE}assets/aistudio/New_tts_node3_7e263853.mp3`,
 };
 
 export const KROPKA_SPRITE_URL = AUDIO_SPRITE_URLS.main;
