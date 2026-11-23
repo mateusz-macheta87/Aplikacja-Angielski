@@ -242,7 +242,7 @@ export const VoiceStudioView: React.FC<VoiceStudioViewProps> = ({
             />
           </div>
 
-          <p className="mt-5 text-xs font-bold text-[#8A7465]">
+          <p className="mt-5 text-xs font-bold text-[#755F51]">
             Krok 1: Posłuchaj Iskierki · Krok 2: Powtórz głośno i posłuchaj swojego głosu!
           </p>
 
@@ -300,7 +300,7 @@ export const VoiceStudioView: React.FC<VoiceStudioViewProps> = ({
                   onClick={handlePlayNormal}
                   className="btn-puffy-white min-h-[44px] px-5 rounded-full font-display text-xs font-bold inline-flex items-center gap-1.5"
                 >
-                  <Play className="w-4 h-4 fill-current text-[#5496E8]" aria-hidden="true" />
+                  <Play className="w-4 h-4 fill-current text-[#2F6DB5]" aria-hidden="true" />
                   Posłuchaj siebie (1×)
                 </button>
                 <button

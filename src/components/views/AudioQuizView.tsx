@@ -208,7 +208,7 @@ export const AudioQuizView: React.FC<AudioQuizViewProps> = ({
             type="button"
             onClick={() => setShowText((t) => !t)}
             aria-label={showText ? 'Ukryj napis' : 'Pokaż napis pomocniczy'}
-            className="min-h-[42px] px-3 rounded-full bg-[#FAF3E8] text-[#786356] text-xs font-bold hover:bg-[#F3E6D3] inline-flex items-center gap-1.5 shrink-0"
+            className="min-h-[44px] px-3 rounded-full bg-[#FAF3E8] text-[#786356] text-xs font-bold hover:bg-[#F3E6D3] inline-flex items-center gap-1.5 shrink-0"
           >
             <Eye className="w-4 h-4" aria-hidden="true" />
             <span className="hidden sm:inline">{showText ? 'Ukryj napis' : 'Pokaż napis'}</span>
@@ -241,13 +241,13 @@ export const AudioQuizView: React.FC<AudioQuizViewProps> = ({
             }
             className="btn-puffy-white min-h-[54px] px-6 py-3 rounded-full font-display text-lg font-bold inline-flex items-center gap-2"
           >
-            <Volume2 className="w-5 h-5 text-[#5496E8]" aria-hidden="true" />
+            <Volume2 className="w-5 h-5 text-[#2F6DB5]" aria-hidden="true" />
             Wolniej
           </button>
         </div>
 
         {(showText || checked) && (
-          <p className="mt-4 text-center font-display text-xl font-bold text-[#4178BF]">
+          <p className="mt-4 text-center font-display text-xl font-bold text-[#2F6DB5]">
             „{currentQuestion.spokenText}”
           </p>
         )}

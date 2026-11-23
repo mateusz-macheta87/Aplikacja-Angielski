@@ -1,20 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Lock, Star, Volume2, VolumeX } from 'lucide-react';
+import { CalendarCheck, Flame, Lock, Play, Star, Timer, Volume2, VolumeX } from 'lucide-react';
 import { ChildScreen, LessonModule, ModuleProgress } from '../../types/curriculum';
 import {
   formatStarsPl,
   getAvailableStars,
+  getCurrentStreak,
   getLast7DaysCalendar,
+  getTotalMapStars,
 } from '../../engine/gameEngine';
 import { playToneEffect, speakText } from '../../engine/audioEngine';
 import { STICKERS_CATALOG } from '../../data/rewardsCatalog';
 import { STORYBOOK_ART } from '../../data/storybookArt';
 import { ItemIllustration } from '../illustrations/ItemIllustration';
 import { MascotAvatar } from '../storybook/MascotAvatar';
-import { AdventureMap } from '../storybook/AdventureMap';
+import { AdventureMap, getMapStops, getNextStop } from '../storybook/AdventureMap';
 import { PWAInstallButton } from '../layout/PWAInstallButton';
-
-export const HERO_SCENE_URL = STORYBOOK_ART.heroFriends;
 
 interface StorybookHomeViewProps {
   modules: LessonModule[];
@@ -39,7 +39,6 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
 }) => {
   const [holdProgress, setHoldProgress] = useState(0);
   const [holdHintVisible, setHoldHintVisible] = useState(false);
-  const [sceneErr, setSceneErr] = useState(false);
   const holdTimerRef = useRef<number | null>(null);
   const holdHintTimerRef = useRef<number | null>(null);
   const holdCompletedRef = useRef(false);
@@ -47,6 +46,11 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
   const availableStars = getAvailableStars(progress);
   const calendarDays = getLast7DaysCalendar(progress.completedDates);
   const todayDone = calendarDays[calendarDays.length - 1]?.isDone;
+  const streak = getCurrentStreak(progress.completedDates);
+  const mapStops = getMapStops(activeModule);
+  const nextStop = getNextStop(mapStops, progress);
+  const doneStops = mapStops.filter((s) => (progress.stopStars[s.id] || 0) > 0).length;
+  const mapStars = getTotalMapStars(progress);
   const mistakeCount = progress.mistakeWordIds.length;
   const unlockedStickerCount = progress.unlockedStickers.length;
 
@@ -128,7 +132,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
             <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#3E2F2B]">
               {isEnglishClothes ? 'English with Iskierka' : activeModule.title}
             </h1>
-            <p className="text-sm font-semibold text-[#8A7465]">
+            <p className="text-sm font-semibold text-[#755F51]">
               {isEnglishClothes
                 ? 'Angielski · klasa 2 · Unit 1: clothes, seasons, weather'
                 : `${activeModule.subjectLabel} · ${activeModule.gradeLevel}`}
@@ -147,7 +151,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
             className="btn-puffy-white min-h-[46px] px-4 py-2 rounded-full inline-flex items-center gap-2 text-sm font-bold text-[#3E2F2B] whitespace-nowrap shrink-0 tabular-nums"
           >
             <Star className="w-5 h-5 fill-[#F5A623] text-[#D9820B]" aria-hidden="true" />
-            <span>{availableStars} do wydania</span>
+            <span className="text-base">{availableStars}</span>
           </button>
 
           <button
@@ -159,7 +163,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
             className="btn-puffy-white min-h-[46px] min-w-[46px] rounded-full flex items-center justify-center text-[#3E2F2B]"
           >
             {soundEffectsEnabled ? (
-              <Volume2 className="w-5 h-5 text-[#5496E8]" aria-hidden="true" />
+              <Volume2 className="w-5 h-5 text-[#2F6DB5]" aria-hidden="true" />
             ) : (
               <VolumeX className="w-5 h-5 text-[#A89687]" aria-hidden="true" />
             )}
@@ -167,90 +171,112 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
         </div>
       </header>
 
-      {/* 2. Warm Dashed Storybook Welcome Card with Generated Illustration */}
-      <section className="rounded-[30px] bg-[#FFFDF8] border-2 border-dashed border-[#DFC19B] shadow-[0_6px_20px_rgba(133,94,58,0.06)] p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-        {!sceneErr && (
-          <img
-            src={HERO_SCENE_URL}
-            alt="Dziewczynka i Pan Chrząszcz rysują kredkami ubrania"
-            referrerPolicy="no-referrer"
-            onError={() => setSceneErr(true)}
-            className="w-full sm:w-52 h-40 sm:h-36 rounded-[22px] object-cover border-2 border-[#EEDAC1] shadow-sm shrink-0"
+      {/* 2. One obvious next step: continue the adventure */}
+      <section
+        aria-labelledby="next-stop-heading"
+        className="rounded-[30px] border-2 border-[#CBEBD5] bg-gradient-to-br from-[#FFFDF8] to-[#F1FAF3] shadow-[0_6px_20px_rgba(62,154,91,0.08)] p-5 sm:p-6 grid grid-cols-1 md:grid-cols-[auto_1fr_minmax(300px,330px)] items-center gap-4 md:gap-6"
+      >
+        <button
+          type="button"
+          onClick={handleHeroSpeak}
+          aria-label="Posłuchaj powitania Iskierki"
+          className="hidden md:flex justify-center rounded-3xl focus-visible:outline-2 focus-visible:outline-amber-500"
+        >
+          <MascotAvatar
+            variant="stage"
+            equippedAccessories={progress.equippedAccessories}
+            className="w-40! h-40! sm:w-40! sm:h-40! -my-3"
           />
-        )}
-        <div className="flex-1 text-center sm:text-left">
-          <p className="font-display text-lg sm:text-xl font-bold text-[#3E2F2B] leading-snug">
-            Cześć! Iskierka i Pan Chrząszcz uczą się angielskiego razem z Tobą!
-          </p>
-          <p className="mt-1.5 text-sm text-[#6E5B4F] leading-relaxed">
-            Idź ścieżką przez cztery pory roku. Za każdy przystanek dostajesz gwiazdki, naklejki do albumu oraz ubranka do Garderoby Iskierki. Przycisk z głośnikiem czyta słowa po angielsku!
-          </p>
-        </div>
-      </section>
+        </button>
 
-      {/* 3. Mój kalendarz (7-day streak card) */}
-      <section className="storybook-card rounded-[28px] p-5">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5">
-          <div className="flex flex-wrap items-baseline gap-2.5">
-            <h2 className="font-display text-xl font-bold text-[#3E2F2B]">Mój kalendarz</h2>
-            <span className="text-sm font-semibold text-[#8A7465]">
-              {todayDone
-                ? 'Dzisiejsze zadanie zaliczone — brawo!'
-                : 'Zrób zadanie dnia i zacznij serię!'}
-            </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                playToneEffect('tap', soundEffectsEnabled);
-                onOpenScreen({ type: 'warmup' });
-              }}
-              className="btn-puffy-amber min-h-[40px] px-4 py-1.5 rounded-full font-display text-xs sm:text-sm font-bold whitespace-nowrap"
-            >
-              3-min rozgrzewka przed sprawdzianem
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                playToneEffect('tap', soundEffectsEnabled);
-                onOpenScreen({
-                  type: 'audio-quiz',
-                  title: 'Zadanie dnia (5 pytań)',
-                  dailyMode: true,
-                });
-              }}
-              className="text-sm font-bold text-[#5496E8] hover:underline whitespace-nowrap px-2"
-            >
-              Zadanie dnia →
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-7 gap-2">
-          {calendarDays.map((day) => (
+        <div className="min-w-0 text-center md:text-left">
+          <p className="text-sm font-extrabold uppercase tracking-wider text-[#2B7A47]">
+            {nextStop ? 'Następny przystanek' : 'Cała mapa ukończona!'}
+          </p>
+          <h2 id="next-stop-heading" className="mt-1 font-display text-3xl sm:text-4xl font-bold text-[#3E2F2B] leading-tight">
+            {nextStop ? `${nextStop.num} · ${nextStop.titleEn}` : 'Brawo, mistrzyni!'}
+          </h2>
+          <p className="mt-0.5 text-base sm:text-lg font-bold text-[#755F51]">
+            {nextStop
+              ? nextStop.descriptionPl
+              : 'Zbieraj więcej gwiazdek, powtarzając ulubione przystanki.'}
+          </p>
+          <div
+            className="mt-3.5 h-3 rounded-full bg-[#E1F0E6] overflow-hidden"
+            role="progressbar"
+            aria-label="Postęp na mapie"
+            aria-valuemin={0}
+            aria-valuemax={mapStops.length}
+            aria-valuenow={doneStops}
+          >
             <div
-              key={day.dateKey}
-              className={`rounded-2xl py-2.5 px-1 flex flex-col items-center justify-center transition-colors ${
-                day.isToday
-                  ? 'bg-[#EEF6FF] border-2 border-[#5496E8]'
-                  : day.isDone
-                    ? 'bg-[#FEF7DC] border-2 border-[#F3DFA2]'
-                    : 'bg-[#FAF5EE] border border-[#F0E5D7]'
-              }`}
+              className="h-full rounded-full bg-[#55B373] transition-[width] duration-500"
+              style={{ width: `${(doneStops / mapStops.length) * 100}%` }}
+            />
+          </div>
+          <p className="mt-1.5 text-sm font-bold text-[#755F51] tabular-nums">
+            {doneStops} z {mapStops.length} przystanków · ⭐ {mapStars} na mapie
+          </p>
+        </div>
+
+        <div className="flex flex-col items-stretch gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              playToneEffect('tap', soundEffectsEnabled);
+              onOpenScreen(
+                nextStop
+                  ? nextStop.targetScreen
+                  : { type: 'audio-quiz', title: 'Zadanie dnia', dailyMode: true }
+              );
+            }}
+            className="btn-puffy-green min-h-[72px] rounded-full font-display text-2xl font-bold inline-flex items-center justify-center gap-3"
+          >
+            <Play className="w-7 h-7 fill-current" aria-hidden="true" />
+            {nextStop ? 'Graj dalej' : 'Zagraj znowu'}
+          </button>
+
+          <div className="flex items-center justify-between gap-3">
+            <div
+              className="flex items-center gap-2"
+              aria-label={`Seria: ${streak} ${streak === 1 ? 'dzień' : 'dni'} z rzędu`}
             >
-              <span className="text-xs font-bold text-[#8A7465]">{day.weekdayShort}</span>
-              <span className="mt-0.5 font-display text-lg font-bold text-[#3E2F2B] tabular-nums">
-                {day.dayNumber}
+              <Flame
+                className={`w-5 h-5 ${streak > 0 ? 'fill-[#F5A623] text-[#D9820B]' : 'text-[#C9B8A6]'}`}
+                aria-hidden="true"
+              />
+              <span className="text-sm font-extrabold text-[#3E2F2B] tabular-nums whitespace-nowrap">
+                {streak} {streak === 1 ? 'dzień' : 'dni'}
               </span>
-              {day.isDone && (
-                <Star
-                  className="mt-0.5 w-4 h-4 fill-[#F5A623] text-[#D9820B]"
-                  aria-label="Zadanie wykonane"
-                />
-              )}
+              <span className="flex gap-1" aria-hidden="true">
+                {calendarDays.map((day) => (
+                  <span
+                    key={day.dateKey}
+                    title={`${day.weekdayShort} ${day.dayNumber}`}
+                    className={`w-3 h-3 rounded-full ${
+                      day.isDone
+                        ? 'bg-[#F5A623]'
+                        : day.isToday
+                          ? 'bg-white ring-2 ring-[#2F6DB5]'
+                          : 'bg-[#EADFCF]'
+                    }`}
+                  />
+                ))}
+              </span>
             </div>
-          ))}
+            <button
+              type="button"
+              onClick={() => {
+                playToneEffect('tap', soundEffectsEnabled);
+                onOpenScreen({ type: 'audio-quiz', title: 'Zadanie dnia', dailyMode: true });
+              }}
+              aria-label={todayDone ? 'Zadanie dnia — dziś już zrobione' : 'Zadanie dnia'}
+              className="btn-puffy-white min-h-[44px] px-3.5 rounded-full inline-flex items-center gap-1.5 text-sm font-bold text-[#3E2F2B] whitespace-nowrap shrink-0"
+            >
+              <CalendarCheck className={`w-4 h-4 ${todayDone ? 'text-[#2B7A47]' : 'text-[#D9820B]'}`} aria-hidden="true" />
+              Zadanie dnia
+            </button>
+          </div>
         </div>
       </section>
 
@@ -291,34 +317,8 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Słowniczek obrazkowy
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
-                Picture dictionary: posłuchaj słówek
-              </p>
-            </div>
-          </button>
-
-          {/* Zadanie dnia */}
-          <button
-            type="button"
-            onClick={() => {
-              playToneEffect('tap', soundEffectsEnabled);
-              onOpenScreen({
-                type: 'audio-quiz',
-                title: 'Zadanie dnia',
-                dailyMode: true,
-              });
-            }}
-            className="storybook-card rounded-[26px] p-4 flex items-center gap-4 text-left hover:-translate-y-0.5 hover:border-[#DFC29D] active:scale-[0.99] transition-all min-h-[108px]"
-          >
-            <div className="w-[72px] h-[72px] rounded-2xl watercolor-frame overflow-hidden flex items-center justify-center shrink-0">
-              <ItemIllustration kind="winter" className="w-full h-full" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
-                Zadanie dnia
-              </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
-                5 szybkich zadań za gwiazdki
+              <p className="mt-1 text-xs font-semibold text-[#755F51]">
+                Posłuchaj wszystkich słówek
               </p>
             </div>
           </button>
@@ -345,7 +345,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Błyskawica
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465] tabular-nums">
+              <p className="mt-1 text-xs font-semibold text-[#755F51] tabular-nums">
                 {progress.bestLightningScore > 0
                   ? `Rekord: ${progress.bestLightningScore} pkt w minutę!`
                   : 'Ile zrobisz w minutę?'}
@@ -405,7 +405,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Pojedynek
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
+              <p className="mt-1 text-xs font-semibold text-[#755F51]">
                 Zagraj z rodzicem na iPadzie!
               </p>
             </div>
@@ -433,7 +433,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Album naklejek
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465] tabular-nums">
+              <p className="mt-1 text-xs font-semibold text-[#755F51] tabular-nums">
                 {unlockedStickerCount} z {STICKERS_CATALOG.length} naklejek
               </p>
             </div>
@@ -457,7 +457,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Garderoba Iskierki
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465] tabular-nums">
+              <p className="mt-1 text-xs font-semibold text-[#755F51] tabular-nums">
                 {formatStarsPl(availableStars)} do wydania
               </p>
             </div>
@@ -475,7 +475,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
             <div className="w-[72px] h-[72px] rounded-2xl watercolor-frame overflow-hidden flex items-center justify-center shrink-0">
               <img
                 src={STORYBOOK_ART.memoryCardBack}
-                alt="Bajkowe karty Audio Memory z księżycem i gwiazdkami"
+                alt="Bajkowe karty Memory z księżycem i gwiazdkami"
                 referrerPolicy="no-referrer"
                 loading="lazy"
                 className="w-full h-full object-cover scale-[1.18]"
@@ -483,10 +483,10 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
             </div>
             <div className="min-w-0">
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
-                Audio Memory
+                Memory ze słuchu
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
-                Odkrywaj pary i słuchaj słówek
+              <p className="mt-1 text-xs font-semibold text-[#755F51]">
+                Znajdź pary i posłuchaj słówek
               </p>
             </div>
           </button>
@@ -513,7 +513,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Powiedz z Iskierką!
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
+              <p className="mt-1 text-xs font-semibold text-[#755F51]">
                 Nagraj głos i posłuchaj duszka
               </p>
             </div>
@@ -541,7 +541,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
                 Bajkowy komiks
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
+              <p className="mt-1 text-xs font-semibold text-[#755F51]">
                 Historyjka z mówiącymi dymkami
               </p>
             </div>
@@ -549,26 +549,20 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
         </div>
       </section>
 
-      {/* 6. Soft Butter-Cream "Dla rodzica" Card (matching Screenshot 2) */}
-      <section className="rounded-[28px] bg-[#FEF7DC] border-2 border-[#F3E2A9] p-6 sm:p-7 space-y-4">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-          <div className="space-y-2 max-w-3xl">
-            <h2 className="font-display text-xl font-bold text-[#4E3818]">Dla rodzica</h2>
-            <p className="text-sm text-[#6B5028] leading-relaxed">
-              {activeModule.teacherNote ||
-                'Zakres: podręcznik str. 8–16 i słowniczek ze str. 80. Ubrania, kolory, zdania „I\'m wearing a coat / purple shorts”, pory roku i pogoda.'}
-            </p>
-            <p className="text-sm text-[#6B5028] leading-relaxed">
-              Lektor angielski w Unit 1 to studyjne nagrania brytyjskie MP3 (wbudowane offline w aplikację — dla własnych nowych modułów automatycznie włącza się głos iPada). Jeśli nic nie słychać, sprawdź, czy iPad nie jest wyciszony. W dyktandzie można klikać literki lub pisać rysikiem Apple Pencil (Bazgroły).
+      {/* 6. Parent corner: one quiet bar, details folded away */}
+      <section
+        aria-labelledby="parent-corner-heading"
+        className="rounded-[28px] bg-[#FFFBEF] border-2 border-dashed border-[#E2CA86] p-4 sm:p-5"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 id="parent-corner-heading" className="font-display text-lg font-bold text-[#4E3818]">
+              Dla rodzica
+            </h2>
+            <p className="text-sm font-semibold text-[#6B5028]">
+              Zakres sprawdzianu, rozgrzewka przed testem, zmiana modułu
             </p>
           </div>
-          <div className="shrink-0">
-            <PWAInstallButton />
-          </div>
-        </div>
-
-        {/* Quiet subject switcher for parent + protected Parent Panel button */}
-        <div className="pt-3 border-t border-[#EED998] flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2.5 max-w-full">
             <button
               type="button"
@@ -602,7 +596,7 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               )}
               <Lock className="w-4 h-4 relative z-10 shrink-0" aria-hidden="true" />
               <span className="relative z-10">
-                Panel rodzica (przytrzymaj 1,2 s)
+                Panel rodzica · przytrzymaj
               </span>
             </button>
             {holdHintVisible && (
@@ -612,26 +606,58 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
             )}
           </div>
 
-          {modules.length > 1 && (
-            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto min-w-0">
-              <label htmlFor="parent-quick-module" className="text-xs font-bold text-[#7A5D2E] shrink-0">
-                Przedmiot / moduł:
-              </label>
-              <select
-                id="parent-quick-module"
-                value={activeModule.id}
-                onChange={(e) => onSelectModule(e.target.value)}
-                className="min-h-[40px] w-full sm:w-auto max-w-full min-w-0 rounded-full border border-[#E2CA86] bg-white px-3.5 py-1.5 text-xs font-bold text-[#4E3818]"
-              >
-                {modules.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.subjectLabel} — {m.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
         </div>
+
+        <details className="group mt-3 border-t border-[#EED998] pt-3">
+          <summary className="min-h-[44px] inline-flex items-center gap-1.5 cursor-pointer select-none text-sm font-bold text-[#7A5D2E] list-none [&::-webkit-details-marker]:hidden">
+            <span className="transition-transform group-open:rotate-90" aria-hidden="true">▸</span>
+            Więcej informacji
+          </summary>
+          <div className="mt-2 grid gap-4 md:grid-cols-[1fr_auto] md:items-start">
+            <div className="space-y-2 max-w-3xl">
+              <p className="text-sm text-[#6B5028] leading-relaxed">
+                {activeModule.teacherNote ||
+                  'Zakres: podręcznik str. 8–16 i słowniczek ze str. 80. Ubrania, kolory, zdania „I\'m wearing a coat / purple shorts”, pory roku i pogoda.'}
+              </p>
+              <p className="text-sm text-[#6B5028] leading-relaxed">
+                Lektor angielski w Unit 1 to studyjne nagrania brytyjskie MP3 (wbudowane offline w aplikację — dla własnych nowych modułów automatycznie włącza się głos iPada). Jeśli nic nie słychać, sprawdź, czy iPad nie jest wyciszony. W dyktandzie można klikać literki lub pisać rysikiem Apple Pencil (Bazgroły).
+              </p>
+            </div>
+            <div className="flex flex-col items-stretch gap-2.5 md:min-w-[260px]">
+              <button
+                type="button"
+                onClick={() => {
+                  playToneEffect('tap', soundEffectsEnabled);
+                  onOpenScreen({ type: 'warmup' });
+                }}
+                className="btn-puffy-amber min-h-[44px] px-4 rounded-full font-display text-sm font-bold inline-flex items-center justify-center gap-2"
+              >
+                <Timer className="w-4 h-4" aria-hidden="true" />
+                3-min rozgrzewka przed sprawdzianem
+              </button>
+              <PWAInstallButton />
+              {modules.length > 1 && (
+                <div className="flex flex-col gap-1 min-w-0">
+                  <label htmlFor="parent-quick-module" className="text-xs font-bold text-[#7A5D2E]">
+                    Przedmiot / moduł:
+                  </label>
+                  <select
+                    id="parent-quick-module"
+                    value={activeModule.id}
+                    onChange={(e) => onSelectModule(e.target.value)}
+                    className="min-h-[44px] w-full max-w-full min-w-0 rounded-full border border-[#E2CA86] bg-white px-3.5 py-1.5 text-xs font-bold text-[#4E3818]"
+                  >
+                    {modules.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.subjectLabel} — {m.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          </div>
+        </details>
       </section>
     </div>
   );

@@ -155,13 +155,13 @@ export const WarmupView: React.FC<WarmupViewProps> = ({
               className="w-full flex items-center justify-between gap-3 text-left font-display text-base font-bold text-[#3E2F2B]"
             >
               <span className="inline-flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#5496E8]" aria-hidden="true" />
+                <Sparkles className="w-4 h-4 text-[#2F6DB5]" aria-hidden="true" />
                 Podsumowanie dla rodzica (co już umie, a co warto powtórzyć)
               </span>
               {parentOpen ? (
-                <ChevronUp className="w-5 h-5 text-[#8A7465]" aria-hidden="true" />
+                <ChevronUp className="w-5 h-5 text-[#755F51]" aria-hidden="true" />
               ) : (
-                <ChevronDown className="w-5 h-5 text-[#8A7465]" aria-hidden="true" />
+                <ChevronDown className="w-5 h-5 text-[#755F51]" aria-hidden="true" />
               )}
             </button>
 
@@ -194,7 +194,7 @@ export const WarmupView: React.FC<WarmupViewProps> = ({
                             <button
                               type="button"
                               onClick={() => speakText(word, { lang: module.speechLang })}
-                              className="px-2.5 py-1 rounded-full bg-white border border-[#EED9BD] text-xs font-bold text-[#4178BF] inline-flex items-center gap-1"
+                              className="px-2.5 py-1 rounded-full bg-white border border-[#EED9BD] text-xs font-bold text-[#2F6DB5] inline-flex items-center gap-1"
                             >
                               <Volume2 className="w-3.5 h-3.5" aria-hidden="true" />
                               Posłuchaj
@@ -222,7 +222,7 @@ export const WarmupView: React.FC<WarmupViewProps> = ({
               mood={selectedId ? 'cheer' : wrongAttempt ? 'thinking' : 'listening'}
             />
             <div className="text-center sm:text-left">
-              <p className="text-xs font-bold text-[#8A7465]">
+              <p className="text-xs font-bold text-[#755F51]">
                 Rozgrzewka · Pytanie {idx + 1} z {questions.length}
               </p>
               <h2 className="font-display text-2xl font-bold text-[#3E2F2B]">

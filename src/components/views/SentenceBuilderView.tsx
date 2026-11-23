@@ -190,7 +190,7 @@ export const SentenceBuilderView: React.FC<SentenceBuilderViewProps> = ({
               <span className="w-8 h-8 rounded-full bg-[#55B373] text-white font-display text-base font-bold flex items-center justify-center shrink-0">
                 {idx + 1}
               </span>
-              <p className="text-xs font-bold text-[#8A7465]">Ułóż zdanie z kafelków</p>
+              <p className="text-xs font-bold text-[#755F51]">Ułóż zdanie z kafelków</p>
             </div>
             <h2 className="mt-2 font-display text-2xl sm:text-3xl font-bold text-[#3E2F2B]">
               {current.promptPl}
@@ -226,7 +226,7 @@ export const SentenceBuilderView: React.FC<SentenceBuilderViewProps> = ({
         {/* Sentence Assembly Tray */}
         <section className="storybook-card rounded-[30px] p-6 sm:p-7">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-bold text-[#8A7465]">
+            <p className="text-xs font-bold text-[#755F51]">
               Twoje zdanie (stuknij kafelek, aby go cofnąć)
             </p>
             {selectedTokens.length > 0 && !result?.isCorrect && (
@@ -267,7 +267,7 @@ export const SentenceBuilderView: React.FC<SentenceBuilderViewProps> = ({
 
           {/* Word Tile Bank */}
           <div className="mt-6">
-            <p className="text-xs font-bold text-[#8A7465] mb-3">
+            <p className="text-xs font-bold text-[#755F51] mb-3">
               Dostępne słowa (uwaga: niektóre kafelki to zmyłki!)
             </p>
             <div className="flex flex-wrap gap-2.5">

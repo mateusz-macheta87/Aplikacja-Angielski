@@ -134,7 +134,7 @@ export const WordGardenView: React.FC<WordGardenViewProps> = ({
                   />
                   <div>
                     <p className="text-xs font-bold text-[#226B3B] inline-flex items-center gap-1">
-                      <Droplets className="w-3.5 h-3.5 text-[#5496E8]" aria-hidden="true" />
+                      <Droplets className="w-3.5 h-3.5 text-[#2F6DB5]" aria-hidden="true" />
                       {thirstyWords.length > 0
                         ? `Pączki czekające na podlanie: ${thirstyWords.length}`
                         : 'Podlewanie bonusowego kwiatka (+1 gwiazdka!)'}
@@ -254,7 +254,7 @@ export const WordGardenView: React.FC<WordGardenViewProps> = ({
               <Sparkles className="w-5 h-5 text-[#55B373]" aria-hidden="true" />
               Kwitnąca łąka Twoich słówek
             </h3>
-            <span className="text-xs font-bold text-[#8A7465]">
+            <span className="text-xs font-bold text-[#755F51]">
               Stuknij kwiatek, aby posłuchać
             </span>
           </div>

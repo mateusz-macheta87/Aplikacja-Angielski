@@ -127,7 +127,7 @@ export const MockTestView: React.FC<MockTestViewProps> = ({
               />
             </div>
           </div>
-          <p className="mt-4 text-xs font-bold text-[#8A7465]">
+          <p className="mt-4 text-xs font-bold text-[#755F51]">
             {module.subjectLabel} · {questions.length} pytań · bez limitu czasu
           </p>
           <h2 className="mt-1 font-display text-3xl font-bold text-[#3E2F2B]">
@@ -184,11 +184,11 @@ export const MockTestView: React.FC<MockTestViewProps> = ({
           title={`Wynik: ${correctTotal} / ${questions.length} (${pct}%)`}
           subtitle={
             <>
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#8A7465] mb-1">
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#755F51] mb-1">
                 <Award className="w-4 h-4 text-[#D9820B]" aria-hidden="true" />
                 Dyplom Mistrzyni · {module.title}
               </span>
-              <span className="block text-base font-bold text-[#4178BF]">{gradeLabel}</span>
+              <span className="block text-base font-bold text-[#2F6DB5]">{gradeLabel}</span>
             </>
           }
           starsCount={mapStars}
@@ -260,7 +260,7 @@ export const MockTestView: React.FC<MockTestViewProps> = ({
               {idx + 1}
             </span>
             <div>
-              <p className="text-xs font-bold text-[#8A7465]">{current.skillCategory}</p>
+              <p className="text-xs font-bold text-[#755F51]">{current.skillCategory}</p>
               <p className="font-display text-lg sm:text-xl font-bold text-[#3E2F2B]">
                 {current.promptPl}
               </p>
@@ -268,7 +268,7 @@ export const MockTestView: React.FC<MockTestViewProps> = ({
           </div>
 
           {current.displayQuestion && (
-            <h2 className="mt-4 font-display text-2xl font-bold text-[#4178BF]">
+            <h2 className="mt-4 font-display text-2xl font-bold text-[#2F6DB5]">
               {current.displayQuestion}
             </h2>
           )}
@@ -291,7 +291,7 @@ export const MockTestView: React.FC<MockTestViewProps> = ({
               }
               className="btn-puffy-white min-h-[50px] px-5 rounded-full font-display text-base font-bold inline-flex items-center gap-2"
             >
-              <Volume2 className="w-4 h-4 text-[#5496E8]" aria-hidden="true" />
+              <Volume2 className="w-4 h-4 text-[#2F6DB5]" aria-hidden="true" />
               Wolniej
             </button>
           </div>

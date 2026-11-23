@@ -302,7 +302,7 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
             Wróć do mapy dziecka
           </button>
           <div>
-            <p className="text-xs font-bold text-[#8A7465]">
+            <p className="text-xs font-bold text-[#755F51]">
               Panel Rodzica · Architektura wieloprzedmiotowa
             </p>
             <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#3E2F2B]">
@@ -316,10 +316,10 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
             <button
               type="button"
               onClick={() => onChangeSpeechRate('normal')}
-              className={`min-h-[38px] px-3.5 py-1 rounded-full text-xs font-bold ${
+              className={`min-h-[44px] px-3.5 py-1 rounded-full text-xs font-bold ${
                 speechRate === 'normal'
                   ? 'bg-white text-[#3E2F2B] shadow-sm'
-                  : 'text-[#8A7465]'
+                  : 'text-[#755F51]'
               }`}
             >
               Lektor: Normalnie
@@ -327,10 +327,10 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
             <button
               type="button"
               onClick={() => onChangeSpeechRate('slow')}
-              className={`min-h-[38px] px-3.5 py-1 rounded-full text-xs font-bold ${
+              className={`min-h-[44px] px-3.5 py-1 rounded-full text-xs font-bold ${
                 speechRate === 'slow'
                   ? 'bg-white text-[#3E2F2B] shadow-sm'
-                  : 'text-[#8A7465]'
+                  : 'text-[#755F51]'
               }`}
             >
               Lektor: Wolniej
@@ -353,7 +353,7 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
             role="tab"
             aria-selected={section === tab.id}
             onClick={() => setSection(tab.id as typeof section)}
-            className={`min-h-[42px] px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-amber-500 ${
+            className={`min-h-[44px] px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-amber-500 ${
               section === tab.id
                 ? 'bg-[#3E2F2B] text-white shadow-sm'
                 : 'text-[#6E5B4F] hover:text-[#3E2F2B]'
@@ -435,7 +435,7 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
                         <button
                           type="button"
                           onClick={() => onSelectModule(m.id)}
-                          className="min-h-[40px] px-4 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
+                          className="min-h-[44px] px-4 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
                         >
                           Uruchom ten moduł
                         </button>
@@ -445,7 +445,7 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
                           type="button"
                           onClick={() => onDeleteCustomModule(m.id)}
                           aria-label={`Usuń moduł ${m.title}`}
-                          className="min-h-[40px] px-3 py-1.5 rounded-xl border border-rose-200 text-rose-700 text-xs font-semibold hover:bg-rose-50 inline-flex items-center gap-1"
+                          className="min-h-[44px] px-3 py-1.5 rounded-xl border border-rose-200 text-rose-700 text-xs font-semibold hover:bg-rose-50 inline-flex items-center gap-1"
                         >
                           <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
                           Usuń
@@ -465,7 +465,7 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setConfirmReset(true)}
-                  className="min-h-[42px] px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1.5"
+                  className="min-h-[44px] px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 inline-flex items-center gap-1.5"
                 >
                   <RotateCcw className="w-3.5 h-3.5" aria-hidden="true" />
                   Wyzeruj postęp tego modułu
@@ -478,14 +478,14 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
                       onResetProgress(activeModule.id);
                       setConfirmReset(false);
                     }}
-                    className="min-h-[42px] px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700"
+                    className="min-h-[44px] px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700"
                   >
                     Potwierdź reset
                   </button>
                   <button
                     type="button"
                     onClick={() => setConfirmReset(false)}
-                    className="min-h-[42px] px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700"
+                    className="min-h-[44px] px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700"
                   >
                     Anuluj
                   </button>
@@ -524,11 +524,11 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
                     />
                   ) : (
                     <>
-                      <Camera className="w-8 h-8 text-[#5496E8] mb-2" aria-hidden="true" />
+                      <Camera className="w-8 h-8 text-[#2F6DB5] mb-2" aria-hidden="true" />
                       <span className="font-display text-sm font-bold text-[#3E2F2B]">
                         Wybierz lub zrób zdjęcie strony
                       </span>
-                      <span className="text-xs text-[#8A7465] mt-1">
+                      <span className="text-xs text-[#755F51] mt-1">
                         JPG, PNG lub WebP · maks. 7 MB
                       </span>
                     </>

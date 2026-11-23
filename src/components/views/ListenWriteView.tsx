@@ -158,7 +158,7 @@ export const ListenWriteView: React.FC<ListenWriteViewProps> = ({
               roundedClass="rounded-[24px]"
             />
           </div>
-          <p className="mt-2 text-sm font-bold text-[#8A7465]">{current.translation}</p>
+          <p className="mt-2 text-sm font-bold text-[#755F51]">{current.translation}</p>
 
           <div className="mt-4 flex flex-wrap justify-center gap-3">
             <button
@@ -174,7 +174,7 @@ export const ListenWriteView: React.FC<ListenWriteViewProps> = ({
               onClick={() => speakText(current.word, { lang: module.speechLang, rate: 'slow' })}
               className="btn-puffy-white min-h-[50px] px-5 rounded-full font-display text-base font-bold inline-flex items-center gap-2"
             >
-              <Volume2 className="w-4 h-4 text-[#5496E8]" aria-hidden="true" />
+              <Volume2 className="w-4 h-4 text-[#2F6DB5]" aria-hidden="true" />
               Wolniej
             </button>
           </div>

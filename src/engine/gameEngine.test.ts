@@ -17,7 +17,9 @@ import {
   formatStarsPl,
   generateAudioQuizQuestions,
   getAvailableStars,
+  getCurrentStreak,
   getLast7DaysCalendar,
+  getVisualKey,
   validateLessonModuleJson,
 } from './gameEngine';
 
@@ -191,4 +193,28 @@ test('buildOutfitCaptionEn applies article "a" for singular and omits it for plu
     buildOutfitCaptionEn(['acc-crown', 'acc-glasses', 'acc-wings'], catalog),
     "I'm wearing a golden crown, star glasses and butterfly wings!"
   );
+});
+
+test('generateAudioQuizQuestions never shows two answers with the same picture', () => {
+  for (const categoryFilter of [undefined, 'weather', 'clothes', 'seasons', 'colours'] as const) {
+    for (let seed = 1; seed <= 60; seed++) {
+      const qs = generateAudioQuizQuestions(UNIT1_CLOTHES_MODULE, 6, seed, { categoryFilter });
+      for (const q of qs) {
+        const keys = q.options.map((o) => getVisualKey({ illustration: o.illustration, defaultColor: o.colorHex }));
+        assert.equal(new Set(keys).size, keys.length, `duplicate picture (seed ${seed}, ${categoryFilter}): ${keys.join(', ')}`);
+        assert.ok(q.options.length >= 2);
+      }
+    }
+  }
+});
+
+test('getCurrentStreak counts consecutive days and keeps a streak alive until today ends', () => {
+  const ref = new Date(2026, 10, 23, 9, 0, 0); // 23 Nov 2026
+  assert.equal(getCurrentStreak([], ref), 0);
+  assert.equal(getCurrentStreak(['2026-11-23'], ref), 1);
+  assert.equal(getCurrentStreak(['2026-11-21', '2026-11-22'], ref), 2, 'today not played yet');
+  assert.equal(getCurrentStreak(['2026-11-21', '2026-11-22', '2026-11-23'], ref), 3);
+  assert.equal(getCurrentStreak(['2026-11-20', '2026-11-22'], ref), 1, 'gap breaks the streak');
+  assert.equal(getCurrentStreak(['2026-11-20'], ref), 0, 'streak ended two days ago');
+  assert.equal(getCurrentStreak(['2026-10-31', '2026-11-01'], new Date(2026, 10, 1, 9)), 2, 'across months');
 });

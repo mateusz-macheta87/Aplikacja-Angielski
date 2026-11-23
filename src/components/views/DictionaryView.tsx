@@ -80,9 +80,9 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
           className="btn-puffy-white min-h-[44px] px-4 py-2 rounded-full text-xs sm:text-sm font-bold inline-flex items-center gap-2 whitespace-nowrap shrink-0"
         >
           {showTranslations ? (
-            <EyeOff className="w-4 h-4 text-[#8A7465]" aria-hidden="true" />
+            <EyeOff className="w-4 h-4 text-[#755F51]" aria-hidden="true" />
           ) : (
-            <Eye className="w-4 h-4 text-[#5496E8]" aria-hidden="true" />
+            <Eye className="w-4 h-4 text-[#2F6DB5]" aria-hidden="true" />
           )}
           {showTranslations ? 'Ukryj tłumaczenia' : 'Pokaż tłumaczenia'}
         </button>
@@ -166,7 +166,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                         </p>
                       )}
                       {module.speechLang.startsWith('en') && item.category === 'clothes' && (
-                        <p className="mt-1.5 text-xs text-[#4178BF] font-bold">
+                        <p className="mt-1.5 text-xs text-[#2F6DB5] font-bold">
                           {item.isPlural ? 'Liczba mnoga (bez „a”)' : 'Liczba pojedyncza (z „a”)'}
                         </p>
                       )}
@@ -180,11 +180,11 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                       onClick={() => handleSpeak(item, item.exampleSentence, 'normal')}
                       className="w-full text-left group"
                     >
-                      <p className="text-sm font-bold text-[#3E2F2B] group-hover:text-[#4178BF] transition-colors">
+                      <p className="text-sm font-bold text-[#3E2F2B] group-hover:text-[#2F6DB5] transition-colors">
                         „{item.exampleSentence}”
                       </p>
                       {showTranslations && (
-                        <p className="mt-0.5 text-xs font-semibold text-[#8A7465]">
+                        <p className="mt-0.5 text-xs font-semibold text-[#755F51]">
                           {item.exampleTranslation}
                         </p>
                       )}
@@ -199,7 +199,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                       type="button"
                       onClick={() => handleSpeak(item, item.word, 'normal')}
                       aria-label={`Wymów słowo ${item.word}`}
-                      className="btn-puffy-blue min-h-[40px] px-3 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1 whitespace-nowrap shrink-0"
+                      className="btn-puffy-blue min-h-[44px] px-3 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1 whitespace-nowrap shrink-0"
                     >
                       <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
                       Słuchaj
@@ -208,9 +208,9 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                       type="button"
                       onClick={() => handleSpeak(item, item.word, 'slow')}
                       aria-label={`Wymów powoli słowo ${item.word}`}
-                      className="btn-puffy-white min-h-[40px] px-2.5 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1 whitespace-nowrap shrink-0"
+                      className="btn-puffy-white min-h-[44px] px-2.5 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1 whitespace-nowrap shrink-0"
                     >
-                      <Volume2 className="w-3.5 h-3.5 text-[#5496E8]" aria-hidden="true" />
+                      <Volume2 className="w-3.5 h-3.5 text-[#2F6DB5]" aria-hidden="true" />
                       Wolniej
                     </button>
                   </div>
@@ -222,7 +222,7 @@ export const DictionaryView: React.FC<DictionaryViewProps> = ({
                       onToggleMastered(item.id);
                     }}
                     aria-pressed={isMastered}
-                    className={`min-h-[40px] px-2.5 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1 transition-all whitespace-nowrap shrink-0 ${
+                    className={`min-h-[44px] px-2.5 py-1.5 rounded-full text-xs font-bold inline-flex items-center gap-1 transition-all whitespace-nowrap shrink-0 ${
                       isMastered
                         ? 'btn-puffy-green'
                         : 'bg-[#FAF3E8] border-2 border-[#E7D8C5] text-[#6E5B4F] hover:border-[#55B373]'

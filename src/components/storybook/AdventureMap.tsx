@@ -1,40 +1,202 @@
 import React, { useEffect, useState } from 'react';
-import { Award, Download, Lock, Sparkles, Star } from 'lucide-react';
+import { Award, Check, Download, Lock, Sparkles, Star } from 'lucide-react';
 import { ChildScreen, LessonModule, MapStopId, ModuleProgress } from '../../types/curriculum';
 import { canOpenTreasureChest } from '../../engine/gameEngine';
-import { STORYBOOK_ART, WARDROBE_ART_MAP } from '../../data/storybookArt';
+import { ISKIERKA_OUTFIT_PORTRAIT, STORYBOOK_ART, WARDROBE_ART_MAP } from '../../data/storybookArt';
 import { renderTreasureDiploma, triggerPngDownload } from '../../utils/postcardExporter';
 import { ItemIllustration } from '../illustrations/ItemIllustration';
-import { MascotAvatar } from './MascotAvatar';
 
 export const MAP_BG_URL = STORYBOOK_ART.mapFourSeasons;
 export const TREASURE_IMG_URL = STORYBOOK_ART.treasureChest;
 
-interface MapNode {
+export interface MapStop {
   id: MapStopId;
   num: number;
   titleEn: string;
   subtitlePl: string;
-  xPct: number;
-  yPct: number;
-  badgeColor: string;
-  ringBg: string;
+  /** One short sentence for the "next stop" card on the home screen. */
+  descriptionPl: string;
   targetScreen: ChildScreen;
   renderIcon: () => React.ReactNode;
 }
 
-const MedallionArt: React.FC<{ src: string; alt: string; zoom?: string }> = ({
-  src,
-  alt,
-  zoom = 'scale-[1.06]',
-}) => (
+const MedallionArt: React.FC<{ src: string; alt: string }> = ({ src, alt }) => (
   <img
     src={src}
     alt={alt}
     referrerPolicy="no-referrer"
     loading="lazy"
-    className={`w-full h-full object-cover pointer-events-none ${zoom}`}
+    className="w-[86%] h-[86%] object-contain pointer-events-none"
   />
+);
+
+const PaletteIcon: React.FC = () => (
+  <svg viewBox="0 0 80 80" className="w-[72%] h-[72%]" role="img" aria-label="Paleta kolorów">
+    <circle cx="27" cy="28" r="13" fill="#E8584A" />
+    <circle cx="53" cy="28" r="13" fill="#F5A623" />
+    <circle cx="27" cy="53" r="13" fill="#5496E8" />
+    <circle cx="53" cy="53" r="13" fill="#55B373" />
+  </svg>
+);
+
+/** The nine stops of the adventure path, in play order. */
+export function getMapStops(module: LessonModule): MapStop[] {
+  const en = module.id === 'en-unit1-mr-beetle-clothes';
+  return [
+    {
+      id: 'stop-clothes',
+      num: 1,
+      titleEn: en ? 'Clothes' : 'Słówka',
+      subtitlePl: en ? 'Ubrania' : 'Poznaj hasła',
+      descriptionPl: en ? 'Posłuchaj i stuknij właściwe ubranie' : 'Poznaj nowe słówka',
+      targetScreen: {
+        type: 'audio-quiz',
+        stopId: 'stop-clothes',
+        categoryFilter: en ? 'clothes' : undefined,
+        title: en ? 'Ubrania' : 'Słownictwo',
+      },
+      renderIcon: () => (
+        <ItemIllustration kind="coat" colorHex="#E05252" className="w-full h-full" roundedClass="rounded-full" />
+      ),
+    },
+    {
+      id: 'stop-colours',
+      num: 2,
+      titleEn: en ? 'Colours' : 'Fiszki',
+      subtitlePl: en ? 'Kolory' : 'Słuchaj',
+      descriptionPl: en ? 'Kolory i kredki po angielsku' : 'Posłuchaj fiszek',
+      targetScreen: en
+        ? { type: 'audio-quiz', stopId: 'stop-colours', categoryFilter: 'colours', title: 'Kolory i kredki' }
+        : { type: 'dictionary' },
+      renderIcon: () => <PaletteIcon />,
+    },
+    {
+      id: 'stop-wearing',
+      num: 3,
+      titleEn: en ? "I'm wearing" : 'Zdania',
+      subtitlePl: 'Zdania',
+      descriptionPl: en ? 'Układamy zdania o ubraniach' : 'Ułóż zdania z kafelków',
+      targetScreen: { type: 'sentence-builder', stopId: 'stop-wearing' },
+      renderIcon: () => (
+        <MedallionArt src={ISKIERKA_OUTFIT_PORTRAIT['acc-scarf']} alt="Iskierka w szaliku" />
+      ),
+    },
+    {
+      id: 'stop-dressup',
+      num: 4,
+      titleEn: en ? 'Dress up' : 'Memory',
+      subtitlePl: en ? 'Ubieranka' : 'Gra w pary',
+      descriptionPl: en ? 'Pokoloruj strój Pana Chrząszcza' : 'Znajdź pary kart',
+      targetScreen:
+        module.crayonChallenges.length > 0
+          ? { type: 'crayon-studio', stopId: 'stop-dressup' }
+          : { type: 'contrast-memory', stopId: 'stop-dressup', initialSubMode: 'memory' },
+      renderIcon: () => (
+        <ItemIllustration kind="shorts" colorHex="#9333EA" className="w-full h-full" roundedClass="rounded-full" />
+      ),
+    },
+    {
+      id: 'stop-seasons',
+      num: 5,
+      titleEn: en ? 'Seasons' : 'Sortowanie',
+      subtitlePl: en ? 'Pory roku' : 'Kontrasty',
+      descriptionPl: en ? 'Lato czy zima? Pory roku' : 'Posortuj hasła',
+      targetScreen: {
+        type: 'contrast-memory',
+        stopId: 'stop-seasons',
+        initialSubMode: module.sortingGame ? 'sorting' : 'memory',
+      },
+      renderIcon: () => <ItemIllustration kind="autumn" className="w-full h-full" roundedClass="rounded-full" />,
+    },
+    {
+      id: 'stop-weather',
+      num: 6,
+      titleEn: en ? 'Weather' : 'Quiz Audio',
+      subtitlePl: en ? 'Pogoda' : 'Słuchanie',
+      descriptionPl: en ? 'Jaka jest dziś pogoda?' : 'Posłuchaj i wybierz',
+      targetScreen: {
+        type: 'audio-quiz',
+        stopId: 'stop-weather',
+        categoryFilter: en ? 'weather' : undefined,
+        title: en ? 'Pogoda' : 'Quiz Audio',
+      },
+      renderIcon: () => <ItemIllustration kind="rainy" className="w-full h-full" roundedClass="rounded-full" />,
+    },
+    {
+      id: 'stop-audio',
+      num: 7,
+      titleEn: 'Iskierka says',
+      subtitlePl: 'Słuchanie',
+      descriptionPl: 'Posłuchaj zdań Iskierki',
+      targetScreen: { type: 'audio-quiz', stopId: 'stop-audio', title: 'Iskierka says — Słuchanie' },
+      renderIcon: () => <MedallionArt src={STORYBOOK_ART.stopHeadphones} alt="Bajkowe słuchawki z nutkami" />,
+    },
+    {
+      id: 'stop-write',
+      num: 8,
+      titleEn: 'Listen & write',
+      subtitlePl: 'Dyktando',
+      descriptionPl: 'Posłuchaj i napisz słówko',
+      targetScreen: { type: 'listen-write', stopId: 'stop-write' },
+      renderIcon: () => <MedallionArt src={STORYBOOK_ART.stopPencil} alt="Bajkowy ołówek i zeszyt" />,
+    },
+    {
+      id: 'stop-test',
+      num: 9,
+      titleEn: 'Test',
+      subtitlePl: 'Sprawdzian',
+      descriptionPl: 'Próbny sprawdzian — dasz radę!',
+      targetScreen: { type: 'test', stopId: 'stop-test' },
+      renderIcon: () => <MedallionArt src={STORYBOOK_ART.stopTrophy} alt="Złoty puchar sprawdzianu" />,
+    },
+  ];
+}
+
+/** First stop without stars, or null when every stop has been played. */
+export function getNextStop(stops: MapStop[], progress: ModuleProgress): MapStop | null {
+  return stops.find((s) => (progress.stopStars[s.id] || 0) === 0) ?? null;
+}
+
+// S-shaped path: stops 1-5 left to right, a bend, stops 6-9 right to left, then the treasure.
+const COLS = [12, 31, 50, 69, 88];
+const ROW_Y = [24, 70];
+function stopPosition(index: number): { xPct: number; yPct: number } {
+  if (index < 5) return { xPct: COLS[index], yPct: ROW_Y[0] };
+  return { xPct: COLS[9 - index], yPct: ROW_Y[1] }; // index 5..9 (9 = treasure)
+}
+const VB_W = 1000;
+const VB_H = 600;
+const toVb = (index: number) => {
+  const p = stopPosition(index);
+  return { x: (p.xPct / 100) * VB_W, y: (p.yPct / 100) * VB_H };
+};
+/** SVG path through positions 0..lastIndex (0-9) following the S. */
+function buildTrailPath(lastIndex: number): string {
+  const start = toVb(0);
+  let d = `M${start.x} ${start.y}`;
+  for (let i = 1; i <= lastIndex; i++) {
+    const p = toVb(i);
+    if (i === 5) {
+      const prev = toVb(4);
+      const bend = prev.x + 105;
+      d += ` C${bend} ${prev.y} ${bend} ${p.y} ${p.x} ${p.y}`;
+    } else {
+      d += ` H${p.x}`;
+    }
+  }
+  return d;
+}
+
+const StopStars: React.FC<{ earned: number; className?: string }> = ({ earned, className = 'w-4 h-4' }) => (
+  <div className="mt-0.5 flex items-center justify-center gap-0.5">
+    {[1, 2, 3].map((s) => (
+      <Star
+        key={s}
+        className={`${className} ${s <= earned ? 'fill-[#F5A623] text-[#D9820B]' : 'text-[#D6C7B7]'}`}
+        aria-hidden="true"
+      />
+    ))}
+  </div>
 );
 
 const AMBIENT_PARTICLES = [
@@ -67,6 +229,7 @@ const BURST_CONFETTI = [
   { tx: '98px', ty: '-20px', color: '#38BDF8', delay: '120ms' },
 ];
 
+
 interface AdventureMapProps {
   module: LessonModule;
   progress: ModuleProgress;
@@ -85,7 +248,6 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
   const [chestPhase, setChestPhase] = useState<'locked' | 'shaking' | 'revealed'>('locked');
   const [diplomaLoading, setDiplomaLoading] = useState(false);
 
-  const isEnglishClothes = module.id === 'en-unit1-mr-beetle-clothes';
   const treasureUnlocked = canOpenTreasureChest(progress);
 
   useEffect(() => {
@@ -96,175 +258,10 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
     return () => clearTimeout(timer);
   }, [chestModalOpen, chestPhase]);
 
-  const stops: MapNode[] = [
-    {
-      id: 'stop-clothes',
-      num: 1,
-      titleEn: isEnglishClothes ? 'Clothes' : 'Słówka',
-      subtitlePl: isEnglishClothes ? 'Ubrania' : 'Poznaj hasła',
-      xPct: 12,
-      yPct: 24,
-      badgeColor: '#55B373',
-      ringBg: '#FFF8EE',
-      targetScreen: {
-        type: 'audio-quiz',
-        stopId: 'stop-clothes',
-        categoryFilter: isEnglishClothes ? 'clothes' : undefined,
-        title: isEnglishClothes ? 'Ubrania' : 'Słownictwo',
-      },
-      renderIcon: () => (
-        <ItemIllustration
-          kind="coat"
-          colorHex="#E05252"
-          className="w-full h-full"
-          roundedClass="rounded-full"
-        />
-      ),
-    },
-    {
-      id: 'stop-colours',
-      num: 2,
-      titleEn: isEnglishClothes ? 'Colours' : 'Fiszki',
-      subtitlePl: isEnglishClothes ? 'Kolory' : 'Słuchaj',
-      xPct: 31,
-      yPct: 19,
-      badgeColor: '#55B373',
-      ringBg: '#FFF6E0',
-      targetScreen: isEnglishClothes
-        ? {
-            type: 'audio-quiz',
-            stopId: 'stop-colours',
-            categoryFilter: 'colours',
-            title: 'Kolory i kredki',
-          }
-        : { type: 'dictionary' },
-      renderIcon: () => (
-        <ItemIllustration kind="colour-swatch" colorHex="#EAB308" className="w-14 h-14" />
-      ),
-    },
-    {
-      id: 'stop-wearing',
-      num: 3,
-      titleEn: isEnglishClothes ? "I'm wearing" : 'Zdania',
-      subtitlePl: 'Zdania',
-      xPct: 50,
-      yPct: 24,
-      badgeColor: '#55B373',
-      ringBg: '#FFF8EE',
-      targetScreen: { type: 'sentence-builder', stopId: 'stop-wearing' },
-      renderIcon: () => (
-        <MedallionArt src={STORYBOOK_ART.stopTalking} alt="Chmurka z ptaszkami — Zdania" />
-      ),
-    },
-    {
-      id: 'stop-dressup',
-      num: 4,
-      titleEn: isEnglishClothes ? 'Dress up' : 'Memory',
-      subtitlePl: isEnglishClothes ? 'Ubieranka' : 'Gra w pary',
-      xPct: 69,
-      yPct: 19,
-      badgeColor: '#55B373',
-      ringBg: '#FFF8EE',
-      targetScreen:
-        module.crayonChallenges.length > 0
-          ? { type: 'crayon-studio', stopId: 'stop-dressup' }
-          : { type: 'contrast-memory', stopId: 'stop-dressup', initialSubMode: 'memory' },
-      renderIcon: () => (
-        <ItemIllustration
-          kind="shorts"
-          colorHex="#9333EA"
-          className="w-full h-full"
-          roundedClass="rounded-full"
-        />
-      ),
-    },
-    {
-      id: 'stop-seasons',
-      num: 5,
-      titleEn: isEnglishClothes ? 'Seasons' : 'Sortowanie',
-      subtitlePl: isEnglishClothes ? 'Pory roku' : 'Kontrasty',
-      xPct: 87,
-      yPct: 37,
-      badgeColor: '#55B373',
-      ringBg: '#FFF8EE',
-      targetScreen: {
-        type: 'contrast-memory',
-        stopId: 'stop-seasons',
-        initialSubMode: module.sortingGame ? 'sorting' : 'memory',
-      },
-      renderIcon: () => (
-        <ItemIllustration kind="autumn" className="w-full h-full" roundedClass="rounded-full" />
-      ),
-    },
-    {
-      id: 'stop-weather',
-      num: 6,
-      titleEn: isEnglishClothes ? 'Weather' : 'Quiz Audio',
-      subtitlePl: isEnglishClothes ? 'Pogoda' : 'Słuchanie',
-      xPct: 69,
-      yPct: 57,
-      badgeColor: '#55B373',
-      ringBg: '#FFF8EE',
-      targetScreen: {
-        type: 'audio-quiz',
-        stopId: 'stop-weather',
-        categoryFilter: isEnglishClothes ? 'weather' : undefined,
-        title: isEnglishClothes ? 'Pogoda' : 'Quiz Audio',
-      },
-      renderIcon: () => (
-        <ItemIllustration kind="sunny" className="w-full h-full" roundedClass="rounded-full" />
-      ),
-    },
-    {
-      id: 'stop-audio',
-      num: 7,
-      titleEn: 'Iskierka says',
-      subtitlePl: 'Słuchanie',
-      xPct: 49,
-      yPct: 51,
-      badgeColor: '#55B373',
-      ringBg: '#FFF8EE',
-      targetScreen: {
-        type: 'audio-quiz',
-        stopId: 'stop-audio',
-        title: 'Iskierka says — Słuchanie',
-      },
-      renderIcon: () => (
-        <MedallionArt src={STORYBOOK_ART.stopHeadphones} alt="Bajkowe słuchawki z nutkami" />
-      ),
-    },
-    {
-      id: 'stop-write',
-      num: 8,
-      titleEn: 'Listen & write',
-      subtitlePl: 'Dyktando',
-      xPct: 30,
-      yPct: 58,
-      badgeColor: '#55B373',
-      ringBg: '#FFF8EE',
-      targetScreen: { type: 'listen-write', stopId: 'stop-write' },
-      renderIcon: () => (
-        <MedallionArt src={STORYBOOK_ART.stopPencil} alt="Bajkowy ołówek i zeszyt" />
-      ),
-    },
-    {
-      id: 'stop-test',
-      num: 9,
-      titleEn: 'Test',
-      subtitlePl: 'Sprawdzian',
-      xPct: 13,
-      yPct: 79,
-      badgeColor: '#D64988',
-      ringBg: '#FFF8EE',
-      targetScreen: { type: 'test', stopId: 'stop-test' },
-      renderIcon: () => (
-        <MedallionArt src={STORYBOOK_ART.stopTrophy} alt="Złoty puchar sprawdzianu" />
-      ),
-    },
-  ];
-
-  const activeStopId =
-    stops.find((s) => (progress.stopStars[s.id] || 0) === 0)?.id || stops[stops.length - 1].id;
+  const stops = getMapStops(module);
+  const nextStop = getNextStop(stops, progress);
+  const nextIndex = nextStop ? stops.indexOf(nextStop) : stops.length; // 9 = treasure
+  const treasurePos = stopPosition(9);
 
   const handleTreasureClick = () => {
     setChestModalOpen(true);
@@ -291,31 +288,38 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
   };
 
   const secretHatArt = WARDROBE_ART_MAP['acc-winter-hat'];
+  const treasureStatus = progress.treasureClaimed ? 'otwarta!' : treasureUnlocked ? 'otwórz skarb!' : 'zamknięta';
 
   return (
-    <section aria-label="Mapa przygód przez cztery pory roku" className="relative">
-      {/* Desktop & iPad Landscape/Portrait Winding Map Canvas */}
-      <div className="hidden sm:block relative w-full h-[560px] md:h-[600px] rounded-[32px] overflow-hidden border-2 border-[#F0DFC8] shadow-[0_10px_30px_rgba(133,94,58,0.09)] bg-[#FFF8EB]">
+    <section aria-labelledby="adventure-map-heading" className="relative">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3 px-1">
+        <h2 id="adventure-map-heading" className="font-display text-2xl font-bold text-[#3E2F2B]">
+          Mapa przygód
+        </h2>
+        <p className="text-sm font-semibold text-[#755F51]">
+          Stuknij dowolny przystanek, żeby zagrać jeszcze raz
+        </p>
+      </div>
+
+      {/* Tablet & desktop: S-shaped trail over the four-seasons painting */}
+      <div className="hidden sm:block relative w-full h-[600px] rounded-[32px] overflow-hidden border-2 border-[#F0DFC8] shadow-[0_10px_30px_rgba(133,94,58,0.09)] bg-[#FFF8EB]">
         {!bgError && (
           <img
             src={MAP_BG_URL}
-            alt="Bajkowa mapa czterech pór roku"
+            alt=""
             referrerPolicy="no-referrer"
             onError={() => setBgError(true)}
             className="absolute inset-0 w-full h-full object-cover opacity-85 select-none pointer-events-none"
           />
         )}
-
-        {/* Soft luminous center scrim so stepping stones stay crisp */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'radial-gradient(ellipse at 50% 50%, rgba(255,250,240,0.72) 0%, rgba(255,248,236,0.34) 68%, rgba(255,248,236,0.16) 100%)',
+              'radial-gradient(ellipse at 50% 50%, rgba(255,250,240,0.6) 0%, rgba(255,248,236,0.3) 68%, rgba(255,248,236,0.14) 100%)',
           }}
         />
 
-        {/* Ambient 4-Seasons Life Layer (GPU-composited, respects prefers-reduced-motion) */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
           {AMBIENT_PARTICLES.map((p) => (
             <span
@@ -329,11 +333,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                 animationDelay: p.delay,
                 animationDuration: p.duration,
                 borderRadius:
-                  p.kind === 'petal'
-                    ? '60% 40% 60% 40%'
-                    : p.kind === 'leaf'
-                      ? '75% 15% 75% 15%'
-                      : '9999px',
+                  p.kind === 'petal' ? '60% 40% 60% 40%' : p.kind === 'leaf' ? '75% 15% 75% 15%' : '9999px',
                 boxShadow:
                   p.kind === 'mote'
                     ? '0 0 10px rgba(253,224,71,0.85)'
@@ -341,212 +341,195 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                       ? '0 0 6px rgba(186,230,253,0.9)'
                       : '0 1px 3px rgba(120,74,20,0.18)',
               }}
-              className={`absolute ${
-                p.kind === 'mote' ? 'animate-ambient-mote' : 'animate-ambient-fall'
-              }`}
+              className={`absolute ${p.kind === 'mote' ? 'animate-ambient-mote' : 'animate-ambient-fall'}`}
             />
           ))}
         </div>
 
-        {/* Winding dotted golden-sand path connecting stops 1..9 -> Treasure */}
+        {/* Trail: soft white road, dotted sand, green for the part already walked */}
         <svg
-          viewBox="0 0 1000 600"
+          viewBox={`0 0 ${VB_W} ${VB_H}`}
           preserveAspectRatio="none"
           className="absolute inset-0 w-full h-full pointer-events-none"
           aria-hidden="true"
         >
-          <polyline
-            points="120,144 310,114 500,144 690,114 870,222 690,342 490,306 300,348 130,474 410,504"
-            fill="none"
-            stroke="#C9A87E"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeDasharray="12 14"
-            opacity="0.85"
-          />
+          <path d={buildTrailPath(9)} fill="none" stroke="#FFFFFF" strokeOpacity="0.8" strokeWidth="30" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          <path d={buildTrailPath(9)} fill="none" stroke="#C9A87E" strokeWidth="8" strokeLinecap="round" strokeDasharray="1 17" vectorEffect="non-scaling-stroke" />
+          {nextIndex > 0 && (
+            <path d={buildTrailPath(nextIndex)} fill="none" stroke="#55B373" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          )}
         </svg>
 
-        {/* Stepping-Stone Stops 1..9 */}
-        {stops.map((stop) => {
+        {stops.map((stop, index) => {
           const earned = progress.stopStars[stop.id] || 0;
-          const isMascotHere = stop.id === activeStopId;
+          const isCurrent = stop === nextStop;
+          const isDone = earned > 0;
+          const { xPct, yPct } = stopPosition(index);
 
           return (
             <div
               key={stop.id}
-              style={{ left: `${stop.xPct}%`, top: `${stop.yPct}%` }}
-              className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10"
+              // Anchor the centre of the disc (not the whole block) on the trail.
+              style={{ left: `${xPct}%`, top: `${yPct}%`, transform: `translate(-50%, -${isCurrent ? 56 : 46}px)` }}
+              className={`absolute flex flex-col items-center ${isCurrent ? 'z-20' : 'z-10'}`}
             >
+              {isCurrent && (
+                <span className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-[#2B7A47] text-white font-display text-sm font-bold whitespace-nowrap shadow-sm">
+                  Tu jesteś!
+                </span>
+              )}
               <button
                 type="button"
                 onClick={() => onOpenScreen(stop.targetScreen)}
-                aria-label={`Przystanek ${stop.num}: ${stop.titleEn} — ${stop.subtitlePl}`}
+                aria-label={`Przystanek ${stop.num}: ${stop.titleEn} — ${stop.subtitlePl}${
+                  isDone ? `, ${earned} z 3 gwiazdek` : isCurrent ? ', następny przystanek' : ''
+                }`}
+                aria-current={isCurrent ? 'step' : undefined}
                 className="group relative flex flex-col items-center focus-visible:outline-2 focus-visible:outline-amber-500 rounded-3xl"
               >
-                {isMascotHere && (
-                  <div className="absolute -right-7 -top-4 z-30 pointer-events-none">
-                    <MascotAvatar
-                      size="sm"
-                      equippedAccessories={progress.equippedAccessories}
-                      mood="happy"
-                      className="shadow-md border-white"
-                    />
-                  </div>
+                {isCurrent && (
+                  <span
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-[112px] h-[112px] rounded-full bg-[#55B373]/25 motion-safe:animate-ping pointer-events-none"
+                    aria-hidden="true"
+                  />
                 )}
-
                 <span
-                  style={{ backgroundColor: stop.badgeColor }}
-                  className="absolute -left-1.5 -top-1.5 z-20 w-7 h-7 rounded-full text-white font-display text-sm font-bold flex items-center justify-center shadow-sm border-2 border-white"
+                  className={`absolute -left-2 -top-2 z-20 rounded-full font-display font-bold flex items-center justify-center shadow-sm border-[3px] ${
+                    isCurrent
+                      ? 'w-10 h-10 text-lg bg-[#55B373] border-white text-white'
+                      : isDone
+                        ? 'w-8 h-8 bg-[#55B373] border-white text-white'
+                        : 'w-8 h-8 text-sm bg-white border-[#E7D5BC] text-[#3E2F2B]'
+                  }`}
+                  aria-hidden="true"
                 >
-                  {stop.num}
+                  {isDone && !isCurrent ? <Check className="w-4 h-4" strokeWidth={3.5} /> : stop.num}
                 </span>
 
                 <div
-                  style={{ backgroundColor: stop.ringBg }}
-                  className="w-[82px] h-[82px] md:w-[88px] md:h-[88px] rounded-full border-4 border-white shadow-[0_6px_16px_rgba(92,65,24,0.16)] overflow-hidden flex items-center justify-center group-hover:scale-105 group-active:scale-95 transition-transform"
+                  className={`relative rounded-full bg-[#FFF8EE] overflow-hidden flex items-center justify-center group-hover:scale-105 group-active:scale-95 transition-transform shadow-[0_6px_16px_rgba(92,65,24,0.16)] ${
+                    isCurrent
+                      ? 'w-[112px] h-[112px] border-[6px] border-[#55B373]'
+                      : isDone
+                        ? 'w-[92px] h-[92px] border-4 border-[#55B373]'
+                        : 'w-[92px] h-[92px] border-4 border-white saturate-[.8]'
+                  }`}
                 >
                   {stop.renderIcon()}
                 </div>
 
-                <div className="mt-1.5 px-3 py-1 rounded-2xl bg-white/95 border border-[#EFE2D2] shadow-sm text-center min-w-[96px]">
-                  <span className="block font-display text-sm font-bold text-[#3E2F2B] leading-tight whitespace-nowrap">
+                <div
+                  className={`mt-2 px-3 py-1.5 rounded-2xl shadow-sm text-center min-w-[112px] ${
+                    isCurrent ? 'bg-[#2B7A47] text-white' : 'bg-white/95 border border-[#EFE2D2] text-[#3E2F2B]'
+                  }`}
+                >
+                  <span className="block font-display text-base font-bold leading-tight whitespace-nowrap">
                     {stop.titleEn}
                   </span>
-                  <span className="block text-[11px] font-semibold text-[#8A7465] leading-tight">
+                  <span className={`block text-[13px] font-semibold leading-tight ${isCurrent ? 'text-[#E3F7EA]' : 'text-[#755F51]'}`}>
                     {stop.subtitlePl}
                   </span>
-                  <div className="mt-0.5 flex items-center justify-center gap-0.5">
-                    {[1, 2, 3].map((s) => (
-                      <Star
-                        key={s}
-                        className={`w-3.5 h-3.5 ${
-                          s <= earned
-                            ? 'fill-[#F5A623] text-[#D9820B]'
-                            : 'text-[#D6C7B7]'
-                        }`}
-                        aria-hidden="true"
-                      />
-                    ))}
-                  </div>
+                  {!isCurrent && <StopStars earned={earned} />}
                 </div>
               </button>
             </div>
           );
         })}
 
-        {/* Stop 10: Magical Treasure Chest */}
+        {/* End of the trail: the treasure chest */}
         <div
-          style={{ left: '41%', top: '84%' }}
-          className="absolute -translate-x-1/2 -translate-y-1/2 z-10"
+          style={{ left: `${treasurePos.xPct}%`, top: `${treasurePos.yPct}%`, transform: 'translate(-50%, -46px)' }}
+          className="absolute z-10"
         >
           <button
             type="button"
             onClick={handleTreasureClick}
             aria-label={
-              treasureUnlocked
-                ? 'Otwórz Skrzynię Skarbów'
-                : 'Skrzynia Skarbów (zamknięta — zdobądź 6 gwiazdek na mapie)'
+              treasureUnlocked ? 'Otwórz Skrzynię Skarbów' : 'Skrzynia Skarbów (zamknięta — zdobądź 6 gwiazdek na mapie)'
             }
             className="group flex flex-col items-center focus-visible:outline-2 focus-visible:outline-amber-500 rounded-3xl"
           >
             <div
-              className={`relative w-[86px] h-[86px] rounded-full border-4 border-white shadow-[0_6px_18px_rgba(146,64,14,0.2)] overflow-hidden bg-[#FFF9F0] flex items-center justify-center group-hover:scale-105 transition-transform ${
-                treasureUnlocked ? 'ring-4 ring-amber-300/80' : 'opacity-85'
+              className={`relative w-[92px] h-[92px] rounded-full border-4 shadow-[0_6px_18px_rgba(146,64,14,0.2)] overflow-hidden bg-[#FFF5DC] flex items-center justify-center group-hover:scale-105 transition-transform ${
+                treasureUnlocked ? 'border-[#F5A623] ring-4 ring-amber-300/80' : 'border-[#F3DFA2]'
               }`}
             >
               <img
                 src={TREASURE_IMG_URL}
-                alt="Bajkowa Skrzynia Skarbów"
+                alt=""
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover scale-110"
+                className="w-[86%] h-[86%] object-contain"
               />
               {!treasureUnlocked && (
-                <div className="absolute inset-0 bg-[#FFF9F0]/45 flex items-center justify-center">
-                  <Lock className="w-6 h-6 text-[#784A14]" aria-hidden="true" />
-                </div>
+                <span className="absolute -left-0 -top-0 w-8 h-8 rounded-full bg-white border-[3px] border-[#F3DFA2] flex items-center justify-center">
+                  <Lock className="w-4 h-4 text-[#784A14]" aria-hidden="true" />
+                </span>
               )}
             </div>
-            <div className="mt-1.5 px-3 py-1 rounded-2xl bg-white/95 border border-[#EFE2D2] shadow-sm text-center">
-              <span className="block font-display text-sm font-bold text-[#3E2F2B] leading-tight">
-                Treasure
-              </span>
-              <span className="block text-[11px] font-semibold text-[#8A7465] leading-tight">
-                {progress.treasureClaimed
-                  ? 'otwarta!'
-                  : treasureUnlocked
-                    ? 'otwórz skarb!'
-                    : 'zamknięta'}
-              </span>
+            <div className="mt-2 px-3 py-1.5 rounded-2xl bg-white/95 border border-[#EFE2D2] shadow-sm text-center min-w-[112px]">
+              <span className="block font-display text-base font-bold text-[#3E2F2B] leading-tight">Treasure</span>
+              <span className="block text-[13px] font-semibold text-[#755F51] leading-tight">{treasureStatus}</span>
             </div>
           </button>
         </div>
       </div>
 
-      {/* Mobile Compact 2-Column Stepping-Stone Trail (< 640px) */}
-      <div className="sm:hidden rounded-[28px] bg-[#FFF8EB] border-2 border-[#F0DFC8] p-4 space-y-3">
-        <p className="font-display text-lg font-bold text-[#3E2F2B] text-center">
-          Ścieżka przez cztery pory roku
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {stops.map((stop) => {
-            const earned = progress.stopStars[stop.id] || 0;
-            return (
+      {/* Phone: the same trail as a numbered list in play order */}
+      <ol className="sm:hidden rounded-[28px] bg-[#FFF8EB] border-2 border-[#F0DFC8] p-3 grid grid-cols-2 gap-3">
+        {stops.map((stop) => {
+          const earned = progress.stopStars[stop.id] || 0;
+          const isCurrent = stop === nextStop;
+          const isDone = earned > 0;
+          return (
+            <li key={stop.id} className={isCurrent ? 'col-span-2' : ''}>
               <button
-                key={stop.id}
                 type="button"
                 onClick={() => onOpenScreen(stop.targetScreen)}
-                className="relative rounded-2xl bg-white border-2 border-[#F0DFC8] p-3.5 flex flex-col items-center text-center active:scale-[0.98] transition-transform"
+                aria-current={isCurrent ? 'step' : undefined}
+                className={`relative w-full rounded-2xl border-2 p-3 flex items-center gap-3 text-left active:scale-[0.98] transition-transform ${
+                  isCurrent
+                    ? 'bg-[#EAF8EE] border-[#55B373]'
+                    : isDone
+                      ? 'bg-white border-[#A7E3B9]'
+                      : 'bg-white border-[#F0DFC8]'
+                }`}
               >
                 <span
-                  style={{ backgroundColor: stop.badgeColor }}
-                  className="absolute left-2.5 top-2.5 w-6 h-6 rounded-full text-white font-display text-xs font-bold flex items-center justify-center"
+                  className={`absolute left-2 top-2 z-10 w-6 h-6 rounded-full font-display text-xs font-bold flex items-center justify-center ${
+                    isDone || isCurrent ? 'bg-[#55B373] text-white' : 'bg-[#F3E8D8] text-[#3E2F2B]'
+                  }`}
+                  aria-hidden="true"
                 >
-                  {stop.num}
+                  {isDone && !isCurrent ? <Check className="w-3.5 h-3.5" strokeWidth={3.5} /> : stop.num}
                 </span>
-                <div
-                  style={{ backgroundColor: stop.ringBg }}
-                  className="w-16 h-16 rounded-full border-2 border-white shadow-sm overflow-hidden flex items-center justify-center"
-                >
+                <div className="w-14 h-14 rounded-full bg-[#FFF8EE] border-2 border-white shadow-sm overflow-hidden flex items-center justify-center shrink-0">
                   {stop.renderIcon()}
                 </div>
-                <span className="mt-2 font-display text-sm font-bold text-[#3E2F2B]">
-                  {stop.titleEn}
-                </span>
-                <span className="text-xs text-[#8A7465]">{stop.subtitlePl}</span>
-                <div className="mt-1 flex gap-0.5">
-                  {[1, 2, 3].map((s) => (
-                    <Star
-                      key={s}
-                      className={`w-3.5 h-3.5 ${
-                        s <= earned ? 'fill-[#F5A623] text-[#D9820B]' : 'text-[#D6C7B7]'
-                      }`}
-                      aria-hidden="true"
-                    />
-                  ))}
+                <div className="min-w-0">
+                  <span className="block font-display text-base font-bold text-[#3E2F2B] leading-tight">{stop.titleEn}</span>
+                  <span className="block text-[13px] font-semibold text-[#755F51]">
+                    {isCurrent ? 'Tu jesteś!' : stop.subtitlePl}
+                  </span>
+                  {!isCurrent && <StopStars earned={earned} className="w-3.5 h-3.5" />}
                 </div>
               </button>
-            );
-          })}
-
+            </li>
+          );
+        })}
+        <li>
           <button
             type="button"
             onClick={handleTreasureClick}
-            className="rounded-2xl bg-[#FEF7DC] border-2 border-[#F3DFA2] p-3.5 flex flex-col items-center text-center"
+            className="w-full rounded-2xl bg-[#FEF7DC] border-2 border-[#F3DFA2] p-3 flex items-center gap-3 text-left"
           >
-            <img
-              src={TREASURE_IMG_URL}
-              alt="Skrzynia Skarbów"
-              referrerPolicy="no-referrer"
-              className="w-16 h-16 rounded-full object-cover"
-            />
-            <span className="mt-2 font-display text-sm font-bold text-[#3E2F2B]">Treasure</span>
-            <span className="text-xs text-[#8A7465]">
-              {progress.treasureClaimed ? 'otwarta!' : treasureUnlocked ? 'otwórz!' : 'zamknięta'}
-            </span>
+            <img src={TREASURE_IMG_URL} alt="" referrerPolicy="no-referrer" className="w-14 h-14 rounded-full object-contain bg-[#FFF5DC]" />
+            <div>
+              <span className="block font-display text-base font-bold text-[#3E2F2B]">Treasure</span>
+              <span className="block text-[13px] font-semibold text-[#755F51]">{treasureStatus}</span>
+            </div>
           </button>
-        </div>
-      </div>
+        </li>
+      </ol>
 
       {/* Animated Treasure Chest Ritual Modal */}
       {chestModalOpen && (
@@ -617,7 +600,7 @@ export const AdventureMap: React.FC<AdventureMapProps> = ({
                       />
                     </div>
                     <div className="min-w-0">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#B86E14]">
+                      <span className="inline-flex items-center gap-1 text-[13px] font-bold text-[#B86E14]">
                         <Award className="w-3.5 h-3.5" aria-hidden="true" />
                         Sekretny dodatek odblokowany!
                       </span>
