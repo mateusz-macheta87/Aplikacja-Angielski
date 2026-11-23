@@ -145,6 +145,13 @@ export type MapStopId =
   | 'stop-write'
   | 'stop-test';
 
+export interface StickerPlacement {
+  xPct: number;
+  yPct: number;
+}
+
+export type StickerSceneId = 'seasons' | 'boutique' | 'picnic';
+
 export interface ModuleProgress {
   moduleId: string;
   masteredWordIds: string[];
@@ -155,6 +162,8 @@ export interface ModuleProgress {
   ownedAccessories: string[];
   equippedAccessories: string[];
   unlockedStickers: string[];
+  stickerPlacements: Record<string, StickerPlacement>;
+  stickerSceneId: StickerSceneId;
   completedDates: string[]; // YYYY-MM-DD local dates for Mój kalendarz
   treasureClaimed: boolean;
   quizzesCompleted: number;
@@ -185,4 +194,8 @@ export type ChildScreen =
   | { type: 'duel' }
   | { type: 'stickers' }
   | { type: 'wardrobe' }
+  | { type: 'garden' }
+  | { type: 'voice-studio' }
+  | { type: 'comic' }
+  | { type: 'warmup' }
   | { type: 'parent' };

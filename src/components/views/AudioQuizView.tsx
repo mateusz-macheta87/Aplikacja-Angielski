@@ -309,7 +309,7 @@ export const AudioQuizView: React.FC<AudioQuizViewProps> = ({
             <MascotAvatar
               size="sm"
               equippedAccessories={equippedAccessories}
-              mood={checked ? (isCorrect ? 'cheer' : 'encourage') : 'happy'}
+              mood={checked ? (isCorrect ? 'cheer' : 'thinking') : pickedId ? 'happy' : 'listening'}
             />
             {checked && (
               <div

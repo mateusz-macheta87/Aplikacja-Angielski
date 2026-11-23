@@ -5,6 +5,7 @@ import {
   LessonModule,
   MapStopId,
   ModuleProgress,
+  StickerSceneId,
 } from './types/curriculum';
 import {
   createEmptyProgress,
@@ -26,6 +27,10 @@ import { LightningDuelView } from './components/views/LightningDuelView';
 import { RewardsWardrobeView } from './components/views/RewardsWardrobeView';
 import { MockTestView } from './components/views/MockTestView';
 import { ParentStudioView } from './components/views/ParentStudioView';
+import { WordGardenView } from './components/views/WordGardenView';
+import { VoiceStudioView } from './components/views/VoiceStudioView';
+import { ComicStoryView } from './components/views/ComicStoryView';
+import { WarmupView } from './components/views/WarmupView';
 
 function getInitialScreen(): ChildScreen {
   if (typeof window !== 'undefined') {
@@ -179,8 +184,41 @@ export default function App() {
         treasureClaimed: true,
         stars: curr.stars + 6,
         unlockedStickers: addUnique(curr.unlockedStickers, ['stk-treasure']),
+        ownedAccessories: addUnique(curr.ownedAccessories, ['acc-winter-hat']),
       };
     });
+  };
+
+  const handleUpdateStickerPlacement = (stickerId: string, xPct: number, yPct: number) => {
+    updateActiveProgress((curr) => ({
+      ...curr,
+      stickerPlacements: {
+        ...curr.stickerPlacements,
+        [stickerId]: { xPct, yPct },
+      },
+    }));
+  };
+
+  const handleRemoveStickerPlacement = (stickerId: string) => {
+    updateActiveProgress((curr) => {
+      const next = { ...curr.stickerPlacements };
+      delete next[stickerId];
+      return { ...curr, stickerPlacements: next };
+    });
+  };
+
+  const handleClearStickers = () => {
+    updateActiveProgress((curr) => ({
+      ...curr,
+      stickerPlacements: {},
+    }));
+  };
+
+  const handleChangeStickerScene = (sceneId: StickerSceneId) => {
+    updateActiveProgress((curr) => ({
+      ...curr,
+      stickerSceneId: sceneId,
+    }));
   };
 
   const handleBuyAccessory = (accessoryId: string, price: number) => {
@@ -191,19 +229,12 @@ export default function App() {
       if (curr.ownedAccessories.includes(accessoryId)) return curr;
       if (getAvailableStars(curr) < price) return curr;
 
-      const sameSlotIds = new Set(
-        WARDROBE_ACCESSORIES.filter((a) => a.slot === item.slot).map((a) => a.id)
-      );
-      const nextEquipped = [
-        ...curr.equippedAccessories.filter((id) => !sameSlotIds.has(id)),
-        accessoryId,
-      ];
-
       return {
         ...curr,
         starsSpent: curr.starsSpent + price,
         ownedAccessories: addUnique(curr.ownedAccessories, [accessoryId]),
-        equippedAccessories: nextEquipped,
+        // Strictly max 1 active accessory so outfits never stack or overlap
+        equippedAccessories: [accessoryId],
       };
     });
   };
@@ -215,21 +246,9 @@ export default function App() {
     updateActiveProgress((curr) => {
       if (!curr.ownedAccessories.includes(accessoryId)) return curr;
       const isEquipped = curr.equippedAccessories.includes(accessoryId);
-      if (isEquipped) {
-        return {
-          ...curr,
-          equippedAccessories: curr.equippedAccessories.filter((id) => id !== accessoryId),
-        };
-      }
-      const sameSlotIds = new Set(
-        WARDROBE_ACCESSORIES.filter((a) => a.slot === item.slot).map((a) => a.id)
-      );
       return {
         ...curr,
-        equippedAccessories: [
-          ...curr.equippedAccessories.filter((id) => !sameSlotIds.has(id)),
-          accessoryId,
-        ],
+        equippedAccessories: isEquipped ? [] : [accessoryId],
       };
     });
   };
@@ -446,6 +465,76 @@ export default function App() {
             onBackToMap={() => navigateTo({ type: 'map' })}
             onBuyAccessory={handleBuyAccessory}
             onToggleEquipAccessory={handleToggleEquipAccessory}
+            onUpdateStickerPlacement={handleUpdateStickerPlacement}
+            onRemoveStickerPlacement={handleRemoveStickerPlacement}
+            onClearStickers={handleClearStickers}
+            onChangeStickerScene={handleChangeStickerScene}
+          />
+        )}
+
+        {screen.type === 'garden' && (
+          <WordGardenView
+            module={activeModule}
+            progress={activeProgress}
+            soundEffectsEnabled={appState.soundEffectsEnabled}
+            speechRate={appState.speechRate}
+            onBackToMap={() => navigateTo({ type: 'map' })}
+            onWaterWordSuccess={(wordId) => {
+              recordActivityCompletion({
+                starsEarned: 1,
+                masteredIds: [wordId],
+                fixedMistakeIds: [wordId],
+              });
+            }}
+          />
+        )}
+
+        {screen.type === 'voice-studio' && (
+          <VoiceStudioView
+            module={activeModule}
+            equippedAccessories={activeProgress.equippedAccessories}
+            soundEffectsEnabled={appState.soundEffectsEnabled}
+            speechRate={appState.speechRate}
+            onBackToMap={() => navigateTo({ type: 'map' })}
+            onCompleteVoiceSession={(starsEarned) => {
+              recordActivityCompletion({
+                starsEarned,
+                extraStickerIds: ['stk-voice'],
+              });
+            }}
+          />
+        )}
+
+        {screen.type === 'comic' && (
+          <ComicStoryView
+            module={activeModule}
+            equippedAccessories={activeProgress.equippedAccessories}
+            soundEffectsEnabled={appState.soundEffectsEnabled}
+            speechRate={appState.speechRate}
+            onBackToMap={() => navigateTo({ type: 'map' })}
+            onCompleteComic={(starsEarned) => {
+              recordActivityCompletion({
+                starsEarned,
+                extraStickerIds: ['stk-comic'],
+              });
+            }}
+          />
+        )}
+
+        {screen.type === 'warmup' && (
+          <WarmupView
+            module={activeModule}
+            progress={activeProgress}
+            soundEffectsEnabled={appState.soundEffectsEnabled}
+            speechRate={appState.speechRate}
+            onBackToMap={() => navigateTo({ type: 'map' })}
+            onCompleteWarmup={(starsEarned, masteredIds, mistakeIds) => {
+              recordActivityCompletion({
+                starsEarned,
+                masteredIds,
+                mistakeIds,
+              });
+            }}
           />
         )}
 

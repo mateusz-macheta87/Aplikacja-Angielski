@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Play, RotateCcw, Star, Timer, Volume2 } from 'lucide-react';
+import { ArrowLeft, Play, RotateCcw, ShieldCheck, Star, Timer, Volume2 } from 'lucide-react';
 import { LessonModule } from '../../types/curriculum';
 import { generateAudioQuizQuestions } from '../../engine/gameEngine';
 import { playToneEffect, speakText } from '../../engine/audioEngine';
@@ -34,6 +34,11 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
   );
 
   const [started, setStarted] = useState(false);
+  const [duelLayout, setDuelLayout] = useState<'tabletop180' | 'turns'>('tabletop180');
+  const [fairHandicap, setFairHandicap] = useState(true);
+  const [parentLocked, setParentLocked] = useState(false);
+  const [roundWinner, setRoundWinner] = useState<null | 'child' | 'parent'>(null);
+
   const [idx, setIdx] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
@@ -65,7 +70,20 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
     }
   }, [started, finished, idx, current, module.speechLang]);
 
-  const handleAnswer = (optId: string) => {
+  // Fair 0.8s handicap for Parent in 180-degree tabletop duel so 8-year-old has a fair edge
+  useEffect(() => {
+    if (mode !== 'duel' || duelLayout !== 'tabletop180' || !started || finished || !fairHandicap) {
+      setParentLocked(false);
+      return;
+    }
+    setParentLocked(true);
+    const timer = window.setTimeout(() => {
+      setParentLocked(false);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [mode, duelLayout, started, finished, fairHandicap, idx]);
+
+  const handleTurnAnswer = (optId: string) => {
     if (!current || finished) return;
     const isRight = optId === current.correctOptionId;
     playToneEffect(isRight ? 'success' : 'tryAgain', soundEffectsEnabled);
@@ -88,6 +106,33 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
     }
   };
 
+  const handleTabletopAnswer = (who: 'child' | 'parent', optId: string) => {
+    if (!current || finished || roundWinner) return;
+    if (who === 'parent' && parentLocked) return;
+
+    const isRight = optId === current.correctOptionId;
+    if (!isRight) {
+      playToneEffect('tryAgain', soundEffectsEnabled);
+      return;
+    }
+
+    playToneEffect('success', soundEffectsEnabled);
+    setRoundWinner(who);
+    if (who === 'child') setP1Score((s) => s + 1);
+    else setP2Score((s) => s + 1);
+
+    window.setTimeout(() => {
+      setRoundWinner(null);
+      if (idx + 1 >= questions.length) {
+        setFinished(true);
+        playToneEffect('fanfare', soundEffectsEnabled);
+        onCompleteDuel(4);
+      } else {
+        setIdx((i) => i + 1);
+      }
+    }, 750);
+  };
+
   const handleRestart = () => {
     setSeed((s) => s + 41);
     setIdx(0);
@@ -95,6 +140,7 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
     setScore(0);
     setP1Score(0);
     setP2Score(0);
+    setRoundWinner(null);
     setFinished(false);
     setStarted(true);
   };
@@ -116,13 +162,56 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
           <h2 className="mt-4 font-display text-3xl font-bold text-[#3E2F2B]">
             {mode === 'lightning'
               ? 'Ile słówek odgadniesz w 60 sekund?'
-              : 'Zagraj na jednym iPadzie z Mamą lub Tatą!'}
+              : 'Połóż iPad na stole i zagraj z Rodzicem!'}
           </h2>
           <p className="mt-2 text-base text-[#6E5B4F] leading-relaxed">
             {mode === 'lightning'
               ? 'Słuchaj uważnie i stukaj obrazki jak najszybciej! Każda dobra odpowiedź to +1 punkt i gwiazdki na koniec.'
-              : '10 rund na zmianę: Gracz 1 (Córka) i Gracz 2 (Rodzic). Kto zdobędzie puchar rodzinnego pojedynku?'}
+              : 'W trybie 180° siedzicie naprzeciwko siebie: górna połowa ekranu jest obrócona dla Rodzica, a dolna dla Córki! Kto pierwszy stuknie właściwy obrazek, zdobywa punkt!'}
           </p>
+
+          {mode === 'duel' && (
+            <div className="mt-5 space-y-3">
+              <div className="inline-flex p-1 rounded-full bg-[#F5ECE0] border border-[#E7D8C5]">
+                <button
+                  type="button"
+                  onClick={() => setDuelLayout('tabletop180')}
+                  className={`min-h-[40px] px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                    duelLayout === 'tabletop180'
+                      ? 'bg-white text-[#3E2F2B] shadow-sm'
+                      : 'text-[#8A7465]'
+                  }`}
+                >
+                  Przy stole (180°)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDuelLayout('turns')}
+                  className={`min-h-[40px] px-4 py-1.5 rounded-full text-xs font-bold transition-colors ${
+                    duelLayout === 'turns'
+                      ? 'bg-white text-[#3E2F2B] shadow-sm'
+                      : 'text-[#8A7465]'
+                  }`}
+                >
+                  Na zmianę
+                </button>
+              </div>
+
+              {duelLayout === 'tabletop180' && (
+                <label className="flex items-center justify-center gap-2.5 text-xs sm:text-sm font-bold text-[#6E5B4F] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={fairHandicap}
+                    onChange={(e) => setFairHandicap(e.target.checked)}
+                    className="w-4 h-4 accent-[#55B373] rounded"
+                  />
+                  <ShieldCheck className="w-4 h-4 text-[#55B373]" aria-hidden="true" />
+                  Wyrównanie szans (+0,8 s przewagi dla córki)
+                </label>
+              )}
+            </div>
+          )}
+
           <button
             type="button"
             onClick={() => {
@@ -183,6 +272,151 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
     );
   }
 
+  // --- TRUE 180° TABLETOP SPLIT-SCREEN DUEL ---
+  if (mode === 'duel' && duelLayout === 'tabletop180') {
+    return (
+      <div className="min-h-screen w-full max-w-4xl mx-auto px-3 sm:px-6 py-4 flex flex-col justify-center gap-5">
+        {/* TOP HALF: PARENT (Rotated 180 degrees for face-to-face iPad tabletop play) */}
+        <section
+          aria-label="Strefa Rodzica (obrócona 180 stopni)"
+          className={`rotate-180 storybook-card rounded-[28px] p-4 sm:p-5 border-2 transition-colors ${
+            roundWinner === 'parent'
+              ? 'bg-[#EAF8EE] border-[#55B373]'
+              : 'bg-[#F4F9FF] border-[#C7E0FA]'
+          }`}
+        >
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <span className="font-display text-base font-bold text-[#2A5E9E]">
+              Rodzic · {p2Score} pkt
+            </span>
+            <span className="font-display text-lg font-bold text-[#3E2F2B]">
+              „{current.spokenText}”
+            </span>
+            <span className="text-xs font-bold text-[#5496E8]">
+              {parentLocked ? 'Chwileczkę...' : 'Twój ruch!'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-4 gap-2.5">
+            {current.options.map((opt) => (
+              <button
+                key={`parent-${opt.id}`}
+                type="button"
+                disabled={parentLocked || Boolean(roundWinner)}
+                onClick={() => handleTabletopAnswer('parent', opt.id)}
+                aria-label={`Rodzic wybiera: ${opt.label}`}
+                className={`min-h-[116px] sm:min-h-[132px] rounded-[22px] border-[3px] p-2 flex flex-col items-center justify-center gap-1.5 transition-all ${
+                  roundWinner === 'parent' && opt.id === current.correctOptionId
+                    ? 'border-[#55B373] bg-[#EAF8EE] scale-105'
+                    : parentLocked
+                      ? 'border-[#E2D8CC] bg-[#F7F3EE] opacity-60 cursor-wait'
+                      : 'border-[#C7E0FA] bg-white hover:border-[#5496E8] active:scale-95'
+                }`}
+              >
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[14px] overflow-hidden flex items-center justify-center">
+                  <ItemIllustration
+                    kind={opt.illustration}
+                    colorHex={opt.colorHex}
+                    className="w-full h-full"
+                    roundedClass="rounded-[12px]"
+                  />
+                </div>
+                <span className="font-display text-xs font-bold text-[#3E2F2B] leading-tight">
+                  {opt.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* CENTER SCORE & AUDIO RIBBON */}
+        <div className="rounded-full bg-[#FFFDF8] border-2 border-[#EED9BD] shadow-sm px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={onBackToMap}
+            className="btn-puffy-white min-h-[40px] px-3.5 rounded-full text-xs font-bold inline-flex items-center gap-1.5"
+          >
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            Mapa
+          </button>
+
+          <div className="flex items-center gap-3 font-display text-sm font-bold text-[#3E2F2B] tabular-nums">
+            <span className="px-3 py-1 rounded-full bg-[#FCE8EE] text-[#9D2A52]">
+              Córka {p1Score}
+            </span>
+            <span className="text-xs text-[#8A7465]">
+              Runda {idx + 1} / {questions.length}
+            </span>
+            <span className="px-3 py-1 rounded-full bg-[#E5F2FE] text-[#2A5E9E]">
+              Rodzic {p2Score}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => speakText(current.spokenText, { lang: module.speechLang })}
+            className="btn-puffy-blue min-h-[40px] px-4 rounded-full text-xs font-bold inline-flex items-center gap-1.5"
+          >
+            <Volume2 className="w-4 h-4" aria-hidden="true" />
+            Powtórz
+          </button>
+        </div>
+
+        {/* BOTTOM HALF: CHILD (Normal 0 degrees) */}
+        <section
+          aria-label="Strefa Córki"
+          className={`storybook-card rounded-[28px] p-4 sm:p-5 border-2 transition-colors ${
+            roundWinner === 'child'
+              ? 'bg-[#EAF8EE] border-[#55B373]'
+              : 'bg-[#FFF6F8] border-[#F6C8D6]'
+          }`}
+        >
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <span className="font-display text-base font-bold text-[#9D2A52]">
+              Córka · {p1Score} pkt
+            </span>
+            <span className="font-display text-lg font-bold text-[#3E2F2B]">
+              „{current.spokenText}”
+            </span>
+            <span className="text-xs font-bold text-[#D64988]">
+              {roundWinner === 'child' ? 'Punkt dla Ciebie!' : 'Stuknij szybciej!'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-4 gap-2.5">
+            {current.options.map((opt) => (
+              <button
+                key={`child-${opt.id}`}
+                type="button"
+                disabled={Boolean(roundWinner)}
+                onClick={() => handleTabletopAnswer('child', opt.id)}
+                aria-label={`Córka wybiera: ${opt.label}`}
+                className={`min-h-[116px] sm:min-h-[132px] rounded-[22px] border-[3px] p-2 flex flex-col items-center justify-center gap-1.5 transition-all ${
+                  roundWinner === 'child' && opt.id === current.correctOptionId
+                    ? 'border-[#55B373] bg-[#EAF8EE] scale-105'
+                    : 'border-[#F6C8D6] bg-white hover:border-[#D64988] active:scale-95'
+                }`}
+              >
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[14px] overflow-hidden flex items-center justify-center">
+                  <ItemIllustration
+                    kind={opt.illustration}
+                    colorHex={opt.colorHex}
+                    className="w-full h-full"
+                    roundedClass="rounded-[12px]"
+                  />
+                </div>
+                <span className="font-display text-xs font-bold text-[#3E2F2B] leading-tight">
+                  {opt.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // --- STANDARD LIGHTNING OR TURN-BASED DUEL ---
   return (
     <StorybookLessonShell
       title={title}
@@ -250,7 +484,7 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
             <button
               key={opt.id}
               type="button"
-              onClick={() => handleAnswer(opt.id)}
+              onClick={() => handleTurnAnswer(opt.id)}
               aria-label={opt.label}
               className="min-h-[154px] rounded-[26px] border-[3px] border-[#E7D3B8] bg-[#FFF8EE] hover:border-[#5496E8] hover:-translate-y-0.5 active:scale-95 p-3 flex flex-col items-center justify-center gap-2 transition-all shadow-[0_4px_12px_rgba(145,103,60,0.08)]"
             >

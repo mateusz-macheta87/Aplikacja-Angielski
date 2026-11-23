@@ -222,8 +222,8 @@ export const CrayonStudioView: React.FC<CrayonStudioViewProps> = ({
             <div className="w-full flex items-center justify-between gap-2 mb-2">
               <p className="text-xs font-bold text-[#8A7465]">
                 {mode === 'challenge'
-                  ? `Zadanie ${idx + 1} z ${challenges.length} · Stuknij ubranie`
-                  : 'Tryb swobodny · Kliknij ubranie'}
+                  ? `Zadanie ${idx + 1} z ${challenges.length} · Stuknij lub zamaluj palcem`
+                  : 'Tryb swobodny · Stuknij lub zamaluj palcem'}
               </p>
               {mode === 'sandbox' && (
                 <div className="flex gap-1.5">
@@ -253,6 +253,8 @@ export const CrayonStudioView: React.FC<CrayonStudioViewProps> = ({
               partColors={partColors}
               onTapPart={handleTapGarment}
               highlightedPart={solvedCurrent ? currentChallenge.targetPart : null}
+              activeCrayonHex={selectedCrayon.hex}
+              onScribbleStroke={() => playToneEffect('scribble', soundEffectsEnabled)}
             />
           </section>
 

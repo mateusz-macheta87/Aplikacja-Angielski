@@ -5,6 +5,9 @@ import { DEMO_MATH_MODULE } from '../data/demoModules';
 import { createEmptyProgress } from './storage';
 import {
   buildMockTest,
+  buildOutfitCaptionEn,
+  buildParentWarmupSummary,
+  buildSmartWarmupQuestions,
   buildWearingSentence,
   canOpenTreasureChest,
   checkSpellingAnswer,
@@ -141,4 +144,51 @@ test('formatStarsPl applies Polish plural forms accurately', () => {
   assert.equal(formatStarsPl(2), '2 gwiazdki');
   assert.equal(formatStarsPl(5), '5 gwiazdek');
   assert.equal(formatStarsPl(22), '22 gwiazdki');
+});
+
+test('buildSmartWarmupQuestions prioritizes mistakes and builds parent summary accurately', () => {
+  const prog = {
+    ...createEmptyProgress(UNIT1_CLOTHES_MODULE.id),
+    mistakeWordIds: ['trousers', 'autumn'],
+    masteredWordIds: ['coat', 'shorts'],
+  };
+  const qs = buildSmartWarmupQuestions(UNIT1_CLOTHES_MODULE, prog, 42);
+  assert.equal(qs.length, 6);
+  const ids = qs.map((q) => q.correctOptionId);
+  assert.equal(ids.includes('trousers'), true);
+  assert.equal(ids.includes('autumn'), true);
+
+  const summary = buildParentWarmupSummary([
+    { wordId: 'coat', word: 'coat', categoryLabel: 'Ubrania', correct: true },
+    { wordId: 'sunny', word: 'sunny', categoryLabel: 'Pogoda', correct: true },
+    { wordId: 'autumn', word: 'autumn', categoryLabel: 'Pory roku', correct: false },
+  ]);
+  assert.deepEqual(summary.strongCategories, ['Ubrania', 'Pogoda']);
+  assert.deepEqual(summary.reviewWords, ['autumn']);
+  assert.equal(summary.scorePercent, 67);
+  assert.equal(summary.readyForTest, false);
+});
+
+test('buildOutfitCaptionEn applies article "a" for singular and omits it for plural accessories', () => {
+  const catalog = [
+    { id: 'acc-crown', englishName: 'Golden crown' },
+    { id: 'acc-wings', englishName: 'Butterfly wings' },
+    { id: 'acc-glasses', englishName: 'Star glasses' },
+  ];
+  assert.equal(
+    buildOutfitCaptionEn([], catalog),
+    'Hello! I love learning English with you!'
+  );
+  assert.equal(
+    buildOutfitCaptionEn(['acc-crown'], catalog),
+    "I'm wearing a golden crown!"
+  );
+  assert.equal(
+    buildOutfitCaptionEn(['acc-crown', 'acc-wings'], catalog),
+    "I'm wearing a golden crown and butterfly wings!"
+  );
+  assert.equal(
+    buildOutfitCaptionEn(['acc-crown', 'acc-glasses', 'acc-wings'], catalog),
+    "I'm wearing a golden crown, star glasses and butterfly wings!"
+  );
 });

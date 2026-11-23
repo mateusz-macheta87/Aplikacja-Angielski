@@ -2,19 +2,29 @@
 // Plays millisecond-accurate British English studio recordings offline on iPad Safari,
 // with automatic fallback to Web Speech API for custom/non-English modules.
 
-import { AudioSpriteCue, KROPKA_SPRITE_URL } from '../data/kropkaAudioSprite';
+import {
+  AUDIO_SPRITE_URLS,
+  AudioSpriteCue,
+  AudioSpriteId,
+} from '../data/kropkaAudioSprite';
 import { resolveSpriteSequence } from './spriteResolver';
 
+const ALL_SPRITE_IDS: AudioSpriteId[] = ['main', 'node1', 'node2', 'node3'];
+
 let audioCtx: AudioContext | null = null;
-let spriteRawBytes: ArrayBuffer | null = null;
-let spriteRawPromise: Promise<ArrayBuffer | null> | null = null;
-let spriteBuffer: AudioBuffer | null = null;
-let spriteBufferPromise: Promise<AudioBuffer | null> | null = null;
+const spriteRawBytes: Partial<Record<AudioSpriteId, ArrayBuffer>> = {};
+const spriteRawPromises: Partial<Record<AudioSpriteId, Promise<ArrayBuffer | null>>> = {};
+const spriteBuffers: Partial<Record<AudioSpriteId, AudioBuffer>> = {};
+const spriteBufferPromises: Partial<Record<AudioSpriteId, Promise<AudioBuffer | null>>> = {};
 let activeSources: AudioBufferSourceNode[] = [];
 let activeTimers: number[] = [];
 let activeRafId: number | null = null;
-let slowAudioEl: HTMLAudioElement | null = null;
+const slowAudioEls: Partial<Record<AudioSpriteId, HTMLAudioElement>> = {};
 let playbackToken = 0;
+
+function getCueSpriteId(cue: AudioSpriteCue): AudioSpriteId {
+  return cue.spriteId ?? 'main';
+}
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
@@ -31,38 +41,45 @@ function getAudioContext(): AudioContext | null {
   return audioCtx;
 }
 
-// Prefetches raw MP3 bytes on page load without instantiating AudioContext (prevents iPad/Chrome autoplay warnings)
-export function preloadAudioSprite(): Promise<ArrayBuffer | null> {
+function prefetchSingleSprite(spriteId: AudioSpriteId): Promise<ArrayBuffer | null> {
   if (typeof window === 'undefined') return Promise.resolve(null);
-  if (spriteRawBytes) return Promise.resolve(spriteRawBytes);
-  if (spriteRawPromise) return spriteRawPromise;
+  if (spriteRawBytes[spriteId]) return Promise.resolve(spriteRawBytes[spriteId]!);
+  if (spriteRawPromises[spriteId]) return spriteRawPromises[spriteId]!;
 
-  spriteRawPromise = fetch(KROPKA_SPRITE_URL)
+  const promise = fetch(AUDIO_SPRITE_URLS[spriteId])
     .then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.arrayBuffer();
     })
     .then((arr) => {
-      spriteRawBytes = arr;
+      spriteRawBytes[spriteId] = arr;
       return arr;
     })
     .catch(() => {
-      spriteRawPromise = null;
+      delete spriteRawPromises[spriteId];
       return null;
     });
 
-  return spriteRawPromise;
+  spriteRawPromises[spriteId] = promise;
+  return promise;
 }
 
-function ensureSpriteBuffer(): Promise<AudioBuffer | null> {
+// Prefetches all 4 studio MP3 sprites on page load without instantiating AudioContext
+export function preloadAudioSprite(): Promise<ArrayBuffer | null> {
   if (typeof window === 'undefined') return Promise.resolve(null);
-  if (spriteBuffer) return Promise.resolve(spriteBuffer);
-  if (spriteBufferPromise) return spriteBufferPromise;
+  const promises = ALL_SPRITE_IDS.map((id) => prefetchSingleSprite(id));
+  return Promise.all(promises).then((results) => results[0] ?? null);
+}
+
+function ensureSpriteBuffer(spriteId: AudioSpriteId): Promise<AudioBuffer | null> {
+  if (typeof window === 'undefined') return Promise.resolve(null);
+  if (spriteBuffers[spriteId]) return Promise.resolve(spriteBuffers[spriteId]!);
+  if (spriteBufferPromises[spriteId]) return spriteBufferPromises[spriteId]!;
 
   const ctx = getAudioContext();
   if (!ctx) return Promise.resolve(null);
 
-  spriteBufferPromise = preloadAudioSprite()
+  const promise = prefetchSingleSprite(spriteId)
     .then((arr) => {
       if (!arr) return null;
       // Copy ArrayBuffer before decoding because decodeAudioData detaches its input
@@ -70,24 +87,25 @@ function ensureSpriteBuffer(): Promise<AudioBuffer | null> {
     })
     .then((decoded) => {
       if (decoded) {
-        spriteBuffer = decoded;
+        spriteBuffers[spriteId] = decoded;
       } else {
-        spriteBufferPromise = null;
+        delete spriteBufferPromises[spriteId];
       }
       return decoded;
     })
     .catch(() => {
-      spriteBufferPromise = null;
+      delete spriteBufferPromises[spriteId];
       return null;
     });
 
-  return spriteBufferPromise;
+  spriteBufferPromises[spriteId] = promise;
+  return promise;
 }
 
-function getSlowAudioElement(): HTMLAudioElement | null {
+function getSlowAudioElement(spriteId: AudioSpriteId): HTMLAudioElement | null {
   if (typeof window === 'undefined' || typeof Audio === 'undefined') return null;
-  if (!slowAudioEl) {
-    const el = new Audio(KROPKA_SPRITE_URL);
+  if (!slowAudioEls[spriteId]) {
+    const el = new Audio(AUDIO_SPRITE_URLS[spriteId]);
     el.preload = 'auto';
     // Preserve natural British voice pitch when slowed down for 8-year-old learners
     const pitchEl = el as HTMLAudioElement & {
@@ -98,13 +116,13 @@ function getSlowAudioElement(): HTMLAudioElement | null {
     pitchEl.preservesPitch = true;
     pitchEl.webkitPreservesPitch = true;
     pitchEl.mozPreservesPitch = true;
-    slowAudioEl = el;
+    slowAudioEls[spriteId] = el;
   }
-  return slowAudioEl;
+  return slowAudioEls[spriteId]!;
 }
 
 export function playToneEffect(
-  kind: 'tap' | 'success' | 'tryAgain' | 'paint' | 'fanfare',
+  kind: 'tap' | 'success' | 'tryAgain' | 'paint' | 'fanfare' | 'scribble' | 'splash',
   enabled = true
 ): void {
   if (!enabled) return;
@@ -138,6 +156,35 @@ export function playToneEffect(
   } else if (kind === 'paint') {
     playNote(440, 0, 0.06, 'sine', 0.1);
     playNote(660, 0.05, 0.09, 'triangle', 0.11);
+  } else if (kind === 'scribble') {
+    // Soft paper-crayon stroke texture via filtered short noise burst
+    const bufSize = Math.floor(ctx.sampleRate * 0.08);
+    const noiseBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = noiseBuf.getChannelData(0);
+    for (let i = 0; i < bufSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.35;
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuf;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1400, now);
+    filter.Q.setValueAtTime(1.8, now);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.11, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    noise.start(now);
+    noise.stop(now + 0.085);
+  } else if (kind === 'splash') {
+    // Sparkling watering-can droplets arpeggio
+    playNote(587.33, 0, 0.09, 'sine', 0.11); // D5
+    playNote(739.99, 0.06, 0.1, 'sine', 0.11); // F#5
+    playNote(880, 0.12, 0.12, 'sine', 0.12); // A5
+    playNote(1174.66, 0.19, 0.18, 'triangle', 0.12); // D6
   } else if (kind === 'success') {
     playNote(523.25, 0, 0.12, 'triangle', 0.14); // C5
     playNote(659.25, 0.09, 0.14, 'triangle', 0.14); // E5
@@ -187,9 +234,10 @@ export function stopSpeaking(): void {
     activeRafId = null;
   }
 
-  if (slowAudioEl) {
+  for (const el of Object.values(slowAudioEls)) {
+    if (!el) continue;
     try {
-      slowAudioEl.pause();
+      el.pause();
     } catch {
       // Ignore pause errors
     }
@@ -205,7 +253,7 @@ export function stopSpeaking(): void {
 }
 
 function playBufferSequence(
-  buffer: AudioBuffer,
+  buffers: Partial<Record<AudioSpriteId, AudioBuffer>>,
   cues: AudioSpriteCue[],
   playbackRate: number,
   token: number,
@@ -224,6 +272,9 @@ function playBufferSequence(
   const gapSec = 0.18;
 
   for (const cue of cues) {
+    const buffer = buffers[getCueSpriteId(cue)];
+    if (!buffer) continue;
+
     const rawDuration = Math.max(0.08, cue.end - cue.start);
     const scaledDuration = rawDuration / playbackRate;
 
@@ -264,12 +315,6 @@ function playSlowHtmlSequence(
   onEnd?: () => void,
   onFail?: () => void
 ): void {
-  const audio = getSlowAudioElement();
-  if (!audio) {
-    onFail?.();
-    return;
-  }
-
   const slowRate = 0.78;
   let index = 0;
   let started = false;
@@ -277,17 +322,17 @@ function playSlowHtmlSequence(
   const playNextCue = () => {
     if (token !== playbackToken) return;
     if (index >= cues.length) {
-      try {
-        audio.pause();
-      } catch {
-        // Ignore
-      }
       onEnd?.();
       return;
     }
 
     const cue = cues[index];
     index += 1;
+    const audio = getSlowAudioElement(getCueSpriteId(cue));
+    if (!audio) {
+      onFail?.();
+      return;
+    }
 
     try {
       audio.playbackRate = slowRate;
@@ -422,17 +467,29 @@ export function speakText(text: string, options: SpeakOptions = {}): void {
   stopSpeaking();
   const token = playbackToken;
 
-  // Priority 1: Studio ElevenLabs British English Audio Sprite (100% offline, instant)
+  // Priority 1: Studio ElevenLabs British English Audio Sprites (100% offline, instant)
   if (lang.toLowerCase().startsWith('en')) {
     const cues = resolveSpriteSequence(text);
     if (cues && cues.length > 0) {
+      const neededIds = Array.from(new Set(cues.map(getCueSpriteId)));
+
+      const ensureNeededBuffers = (): Promise<Partial<Record<AudioSpriteId, AudioBuffer>> | null> =>
+        Promise.all(neededIds.map((id) => ensureSpriteBuffer(id))).then((decodedList) => {
+          if (decodedList.some((b) => !b)) return null;
+          const map: Partial<Record<AudioSpriteId, AudioBuffer>> = {};
+          neededIds.forEach((id, i) => {
+            map[id] = decodedList[i]!;
+          });
+          return map;
+        });
+
       if (rate === 'slow') {
         // Use pitch-preserving HTMLAudioElement at 0.78x, with Web Audio fallback
         playSlowHtmlSequence(cues, token, onStart, onEnd, () => {
-          ensureSpriteBuffer().then((buf) => {
+          ensureNeededBuffers().then((bufMap) => {
             if (token !== playbackToken) return;
-            if (buf) {
-              playBufferSequence(buf, cues, 0.84, token, onStart, onEnd);
+            if (bufMap) {
+              playBufferSequence(bufMap, cues, 0.84, token, onStart, onEnd);
             } else {
               speakWithWebSpeech(text, lang, rate, token, onStart, onEnd);
             }
@@ -441,15 +498,15 @@ export function speakText(text: string, options: SpeakOptions = {}): void {
         return;
       }
 
-      if (spriteBuffer) {
-        playBufferSequence(spriteBuffer, cues, 1.0, token, onStart, onEnd);
+      if (neededIds.every((id) => Boolean(spriteBuffers[id]))) {
+        playBufferSequence(spriteBuffers, cues, 1.0, token, onStart, onEnd);
         return;
       }
 
-      ensureSpriteBuffer().then((buf) => {
+      ensureNeededBuffers().then((bufMap) => {
         if (token !== playbackToken) return;
-        if (buf) {
-          playBufferSequence(buf, cues, 1.0, token, onStart, onEnd);
+        if (bufMap) {
+          playBufferSequence(bufMap, cues, 1.0, token, onStart, onEnd);
         } else {
           speakWithWebSpeech(text, lang, rate, token, onStart, onEnd);
         }

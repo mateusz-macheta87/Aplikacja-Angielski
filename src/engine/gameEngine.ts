@@ -99,7 +99,9 @@ export function buildWearingSentence(
   if (isPlural) {
     return `I'm wearing ${prefix}${cleanColor} ${cleanWord}.`;
   }
-  return `I'm wearing a ${prefix}${cleanColor} ${cleanWord}.`;
+  const firstWord = includeNew ? 'new' : cleanColor;
+  const article = /^[aeiou]/.test(firstWord) ? 'an' : 'a';
+  return `I'm wearing ${article} ${prefix}${cleanColor} ${cleanWord}.`;
 }
 
 export interface SentenceCheckResult {
@@ -447,18 +449,103 @@ export interface ModuleValidationResult {
   error?: string;
 }
 
+const MAX_MODULE_JSON_BYTES = 128 * 1024; // 128 KB max import payload
+const MAX_VOCAB_ITEMS = 60;
+const MAX_SENTENCE_ITEMS = 40;
+const MAX_CRAYON_ITEMS = 20;
+const FORBIDDEN_JSON_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
+const ALLOWED_SUBJECT_IDS = new Set(['english', 'math', 'science', 'polish', 'custom']);
+const ALLOWED_VOCAB_CATEGORIES = new Set([
+  'clothes',
+  'colours',
+  'seasons',
+  'weather',
+  'bedtime',
+  'general',
+]);
+const ALLOWED_ILLUSTRATION_KEYS = new Set([
+  'coat',
+  'trousers',
+  'tshirt',
+  'jumper',
+  'skirt',
+  'shorts',
+  'shoes',
+  'cap',
+  'hat',
+  'pyjamas',
+  'slippers',
+  'dressing-gown',
+  'spring',
+  'summer',
+  'autumn',
+  'winter',
+  'sunny',
+  'cloudy',
+  'rainy',
+  'snowy',
+  'hot',
+  'cold',
+  'ice-cream',
+  'soup',
+  'park',
+  'house',
+  'colour-swatch',
+  'math-card',
+  'science-card',
+  'generic',
+]);
+const ALLOWED_GARMENTS = new Set(['coat', 'jumper', 'shorts', 'trousers', 'tshirt', 'skirt', 'cap', 'shoes']);
+const HEX_COLOR_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+const BCP47_LANG_RE = /^[a-z]{2}(-[A-Z]{2})?$/;
+
+function sanitizeText(value: unknown, maxLen: number): string {
+  if (typeof value !== 'string') return '';
+  return value.replace(/[\u0000-\u001f\u007f]/g, '').trim().slice(0, maxLen);
+}
+
+function sanitizeSafeId(value: unknown, fallback: string): string {
+  const raw = sanitizeText(value, 64).replace(/[^a-zA-Z0-9_-]/g, '-').replace(/^-+|-+$/g, '');
+  return raw || fallback;
+}
+
 export function validateLessonModuleJson(rawText: string): ModuleValidationResult {
-  if (!rawText.trim()) {
+  if (typeof rawText !== 'string' || !rawText.trim()) {
     return { valid: false, error: 'Wklej poprawny obiekt JSON modułu.' };
   }
+  if (rawText.length > MAX_MODULE_JSON_BYTES) {
+    return {
+      valid: false,
+      error: 'Plik JSON jest zbyt duży (maksymalnie 128 KB). Podziel materiał na mniejsze moduły.',
+    };
+  }
   try {
-    const parsed = JSON.parse(rawText) as Partial<LessonModule>;
-    if (!parsed || typeof parsed !== 'object') {
+    let sawForbiddenKey = false;
+    const parsed = JSON.parse(rawText, (key, value) => {
+      if (FORBIDDEN_JSON_KEYS.has(key)) {
+        sawForbiddenKey = true;
+        return undefined;
+      }
+      return value;
+    }) as Partial<LessonModule>;
+
+    if (sawForbiddenKey) {
+      return {
+        valid: false,
+        error: 'Wykryto niedozwolone klucze techniczne w pliku JSON.',
+      };
+    }
+
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
       return { valid: false, error: 'JSON musi być obiektem modułu.' };
     }
-    if (!parsed.title || typeof parsed.title !== 'string' || !parsed.title.trim()) {
+
+    const title = sanitizeText(parsed.title, 100);
+    if (!title) {
       return { valid: false, error: 'Brakuje wymaganego pola „title” (tytuł lekcji).' };
     }
+
     if (!Array.isArray(parsed.vocabulary) || parsed.vocabulary.length === 0) {
       return {
         valid: false,
@@ -466,44 +553,125 @@ export function validateLessonModuleJson(rawText: string): ModuleValidationResul
       };
     }
 
-    const sanitizedVocab: VocabItem[] = parsed.vocabulary.map((item, idx) => ({
-      id: item.id || `v-${idx + 1}`,
-      word: String(item.word || '').trim(),
-      translation: String(item.translation || '').trim(),
-      category: item.category || 'general',
-      categoryLabel: item.categoryLabel || 'Słownictwo',
-      illustration: item.illustration || 'generic',
-      defaultColor: item.defaultColor,
-      isPlural: Boolean(item.isPlural),
-      phonicsHighlight: item.phonicsHighlight,
-      exampleSentence: item.exampleSentence || String(item.word || ''),
-      exampleTranslation: item.exampleTranslation || String(item.translation || ''),
-      textbookPage: item.textbookPage,
-    }));
-
-    if (sanitizedVocab.some((v) => !v.word || !v.translation)) {
+    if (parsed.vocabulary.length > MAX_VOCAB_ITEMS) {
       return {
         valid: false,
-        error: 'Każdy element w „vocabulary” musi mieć wypełnione pola „word” oraz „translation”.',
+        error: `Moduł może zawierać maksymalnie ${MAX_VOCAB_ITEMS} słówek lub pojęć.`,
       };
     }
 
+    const sanitizedVocab: VocabItem[] = [];
+    for (let idx = 0; idx < parsed.vocabulary.length; idx++) {
+      const item = parsed.vocabulary[idx] as Partial<VocabItem> | null | undefined;
+      if (!item || typeof item !== 'object' || Array.isArray(item)) {
+        return {
+          valid: false,
+          error: `Element nr ${idx + 1} w „vocabulary” musi być obiektem.`,
+        };
+      }
+      const word = sanitizeText(item.word, 80);
+      const translation = sanitizeText(item.translation, 100);
+      if (!word || !translation) {
+        return {
+          valid: false,
+          error: 'Każdy element w „vocabulary” musi mieć wypełnione pola „word” oraz „translation”.',
+        };
+      }
+      const rawCat = sanitizeText(item.category, 24);
+      const rawIll = sanitizeText(item.illustration, 32);
+      const rawColor = sanitizeText(item.defaultColor, 16);
+      sanitizedVocab.push({
+        id: sanitizeSafeId(item.id, `v-${idx + 1}`),
+        word,
+        translation,
+        category: (ALLOWED_VOCAB_CATEGORIES.has(rawCat) ? rawCat : 'general') as VocabCategory,
+        categoryLabel: sanitizeText(item.categoryLabel, 40) || 'Słownictwo',
+        illustration: (ALLOWED_ILLUSTRATION_KEYS.has(rawIll)
+          ? rawIll
+          : 'generic') as VocabItem['illustration'],
+        defaultColor: HEX_COLOR_RE.test(rawColor) ? rawColor : undefined,
+        isPlural: Boolean(item.isPlural),
+        phonicsHighlight: sanitizeText(item.phonicsHighlight, 16) || undefined,
+        exampleSentence: sanitizeText(item.exampleSentence, 160) || word,
+        exampleTranslation: sanitizeText(item.exampleTranslation, 160) || translation,
+        textbookPage: sanitizeText(item.textbookPage, 24) || undefined,
+      });
+    }
+
+    const rawSentences = Array.isArray(parsed.sentences)
+      ? parsed.sentences.slice(0, MAX_SENTENCE_ITEMS)
+      : [];
+    const sanitizedSentences = rawSentences
+      .filter((s) => s && typeof s === 'object' && !Array.isArray(s))
+      .map((s, idx) => {
+        const targetSentence = sanitizeText(s.targetSentence, 160);
+        if (!targetSentence) return null;
+        const tokens = Array.isArray(s.tokens)
+          ? s.tokens
+              .map((t) => sanitizeText(t, 40))
+              .filter(Boolean)
+              .slice(0, 20)
+          : targetSentence.split(/\s+/).filter(Boolean).slice(0, 20);
+        const rawIll = sanitizeText(s.illustration, 32);
+        return {
+          id: sanitizeSafeId(s.id, `s-${idx + 1}`),
+          promptPl: sanitizeText(s.promptPl, 160) || 'Ułóż poprawne zdanie',
+          targetSentence,
+          tokens,
+          grammarTipPl: sanitizeText(s.grammarTipPl, 200) || 'Sprawdź kolejność wyrazów.',
+          illustration: (ALLOWED_ILLUSTRATION_KEYS.has(rawIll)
+            ? rawIll
+            : 'generic') as VocabItem['illustration'],
+          skillTag: 'general' as const,
+        };
+      })
+      .filter((x): x is NonNullable<typeof x> => x !== null);
+
+    const rawCrayons = Array.isArray(parsed.crayonChallenges)
+      ? parsed.crayonChallenges.slice(0, MAX_CRAYON_ITEMS)
+      : [];
+    const sanitizedCrayons: CrayonChallenge[] = [];
+    for (let idx = 0; idx < rawCrayons.length; idx++) {
+      const c = rawCrayons[idx];
+      if (!c || typeof c !== 'object' || Array.isArray(c)) continue;
+      const targetPart = sanitizeText(c.targetPart, 24);
+      const targetColorHex = sanitizeText(c.targetColorHex, 16);
+      const sentence = sanitizeText(c.sentence, 160);
+      if (!ALLOWED_GARMENTS.has(targetPart) || !HEX_COLOR_RE.test(targetColorHex) || !sentence) {
+        continue;
+      }
+      const rawOutfit = sanitizeText(c.outfitMode, 16);
+      const outfitMode: CrayonChallenge['outfitMode'] =
+        rawOutfit === 'winter' || rawOutfit === 'skirt' ? rawOutfit : 'casual';
+      sanitizedCrayons.push({
+        id: sanitizeSafeId(c.id, `c-${idx + 1}`),
+        sentence,
+        translationPl: sanitizeText(c.translationPl, 160) || sentence,
+        targetPart: targetPart as CrayonChallenge['targetPart'],
+        targetColorName: sanitizeText(c.targetColorName, 24) || 'blue',
+        targetColorPl: sanitizeText(c.targetColorPl, 24) || 'niebieski',
+        targetColorHex,
+        outfitMode,
+      });
+    }
+
+    const rawSubject = sanitizeText(parsed.subject, 24);
+    const rawLang = sanitizeText(parsed.speechLang, 16);
+
     const validModule: LessonModule = {
-      id: parsed.id?.trim() || `custom-${Date.now()}`,
-      title: parsed.title.trim(),
-      subtitle: parsed.subtitle?.trim() || 'Własny moduł tematyczny',
-      subject: parsed.subject || 'custom',
-      subjectLabel: parsed.subjectLabel?.trim() || 'Własny przedmiot',
-      gradeLevel: parsed.gradeLevel?.trim() || 'Własny zestaw',
-      speechLang: parsed.speechLang?.trim() || 'en-GB',
-      sourceReference: parsed.sourceReference?.trim() || 'Moduł dodany przez rodzica',
-      teacherNote: parsed.teacherNote,
+      id: sanitizeSafeId(parsed.id, `custom-${Date.now()}`),
+      title,
+      subtitle: sanitizeText(parsed.subtitle, 140) || 'Własny moduł tematyczny',
+      subject: (ALLOWED_SUBJECT_IDS.has(rawSubject) ? rawSubject : 'custom') as LessonModule['subject'],
+      subjectLabel: sanitizeText(parsed.subjectLabel, 48) || 'Własny przedmiot',
+      gradeLevel: sanitizeText(parsed.gradeLevel, 40) || 'Własny zestaw',
+      speechLang: BCP47_LANG_RE.test(rawLang) ? rawLang : 'en-GB',
+      sourceReference: sanitizeText(parsed.sourceReference, 100) || 'Moduł dodany przez rodzica',
+      teacherNote: sanitizeText(parsed.teacherNote, 320) || undefined,
       isBuiltIn: false,
       vocabulary: sanitizedVocab,
-      sentences: Array.isArray(parsed.sentences) ? parsed.sentences : [],
-      crayonChallenges: Array.isArray(parsed.crayonChallenges) ? parsed.crayonChallenges : [],
-      sortingGame: parsed.sortingGame,
-      customAudioQuizzes: parsed.customAudioQuizzes,
+      sentences: sanitizedSentences,
+      crayonChallenges: sanitizedCrayons,
     };
 
     return { valid: true, module: validModule };
@@ -511,3 +679,144 @@ export function validateLessonModuleJson(rawText: string): ModuleValidationResul
     return { valid: false, error: 'Nieprawidłowa składnia JSON. Sprawdź przecinki i cudzysłowy.' };
   }
 }
+
+export interface WarmupAnswerRecord {
+  wordId: string;
+  word: string;
+  categoryLabel: string;
+  correct: boolean;
+}
+
+export interface ParentWarmupSummary {
+  strongCategories: string[];
+  reviewWords: string[];
+  scorePercent: number;
+  readyForTest: boolean;
+}
+
+/**
+ * Selects up to 6 targeted questions for the "3-minutowa rozgrzewka przed sprawdzianem":
+ * prioritizes words in mistakeWordIds first, then unmastered words spread across categories,
+ * then balanced review from the full module.
+ */
+export function buildSmartWarmupQuestions(
+  module: LessonModule,
+  progress: ModuleProgress,
+  seed = 77
+): AudioQuizQuestion[] {
+  const targetCount = Math.min(6, Math.max(1, module.vocabulary.length));
+  const pickedIds: string[] = [];
+  const seen = new Set<string>();
+
+  const pushUnique = (id: string) => {
+    if (!seen.has(id) && module.vocabulary.some((v) => v.id === id) && pickedIds.length < targetCount) {
+      seen.add(id);
+      pickedIds.push(id);
+    }
+  };
+
+  // 1. Prioritize words needing watering (mistakes)
+  for (const id of progress.mistakeWordIds) {
+    pushUnique(id);
+  }
+
+  // 2. Prioritize unmastered words spread across distinct categories
+  const masteredSet = new Set(progress.masteredWordIds);
+  const unmastered = seededShuffle(
+    module.vocabulary.filter((v) => !masteredSet.has(v.id)),
+    seed
+  );
+  const usedCats = new Set<string>();
+  for (const item of unmastered) {
+    if (!usedCats.has(item.category)) {
+      usedCats.add(item.category);
+      pushUnique(item.id);
+    }
+  }
+  for (const item of unmastered) {
+    pushUnique(item.id);
+  }
+
+  // 3. Fill remaining slots with balanced module vocabulary
+  const rest = seededShuffle(module.vocabulary, seed + 19);
+  for (const item of rest) {
+    pushUnique(item.id);
+  }
+
+  return generateAudioQuizQuestions(module, targetCount, seed + 7, {
+    onlyWordIds: pickedIds,
+  });
+}
+
+/**
+ * Generates an actionable Polish summary for parents after a 3-minute warmup session.
+ */
+export function buildParentWarmupSummary(
+  records: WarmupAnswerRecord[]
+): ParentWarmupSummary {
+  if (records.length === 0) {
+    return { strongCategories: [], reviewWords: [], scorePercent: 0, readyForTest: false };
+  }
+
+  const byCategory = new Map<string, { correct: number; total: number }>();
+  const reviewWords: string[] = [];
+  let totalCorrect = 0;
+
+  for (const rec of records) {
+    if (rec.correct) {
+      totalCorrect += 1;
+    } else if (!reviewWords.includes(rec.word)) {
+      reviewWords.push(rec.word);
+    }
+    const stat = byCategory.get(rec.categoryLabel) || { correct: 0, total: 0 };
+    stat.total += 1;
+    if (rec.correct) stat.correct += 1;
+    byCategory.set(rec.categoryLabel, stat);
+  }
+
+  const strongCategories: string[] = [];
+  for (const [cat, stat] of byCategory.entries()) {
+    if (stat.correct === stat.total && stat.total > 0) {
+      strongCategories.push(cat);
+    }
+  }
+
+  const scorePercent = Math.round((totalCorrect / records.length) * 100);
+  return {
+    strongCategories,
+    reviewWords,
+    scorePercent,
+    readyForTest: scorePercent >= 80,
+  };
+}
+
+const PLURAL_ACCESSORIES = new Set(['star glasses', 'butterfly wings']);
+
+/**
+ * Builds a natural grammatical English sentence for Iskierka's wardrobe photo postcard.
+ */
+export function buildOutfitCaptionEn(
+  accessoryIds: string[],
+  catalog: { id: string; englishName: string }[]
+): string {
+  const names = accessoryIds
+    .map((id) => catalog.find((c) => c.id === id)?.englishName)
+    .filter((n): n is string => Boolean(n));
+
+  if (names.length === 0) {
+    return 'Hello! I love learning English with you!';
+  }
+
+  const phrases = names.map((name) => {
+    const lower = name.toLowerCase();
+    return PLURAL_ACCESSORIES.has(lower) ? lower : `a ${lower}`;
+  });
+
+  if (phrases.length === 1) {
+    return `I'm wearing ${phrases[0]}!`;
+  }
+  const last = phrases[phrases.length - 1];
+  const head = phrases.slice(0, -1).join(', ');
+  return `I'm wearing ${head} and ${last}!`;
+}
+

@@ -3,35 +3,11 @@ import { AudioSpriteCue, KROPKA_AUDIO_SPRITE } from '../data/kropkaAudioSprite';
 // Explicit phrases we intentionally skip from the sprite (e.g., homograph 'bow' pronounced /baʊ/)
 const EXCLUDED_KEYS = new Set<string>(['bow']);
 
-// Smart aliases bridging textbook phrasing in Unit 1 to exact ElevenLabs studio clips
+// Formatting bridges mapping UI punctuation/shorthand to exact ElevenLabs studio clips
 const PHRASE_ALIASES: Record<string, string[]> = {
-  "i'm wearing a new green t-shirt": ["i'm wearing a green t-shirt"],
-  "i'm wearing pyjamas": ["i'm wearing pink pyjamas"],
-  "good night i'm wearing pyjamas": ['good night put on your pyjamas'],
+  'sunny & hot': ['sunny and hot'],
+  'snowy & cold': ['snowy and cold'],
   "i'm wearing a hat": ["i'm wearing a red hat"],
-  "it's winter i'm wearing a hat": ["it's winter", "i'm wearing a red hat"],
-  "i'm wearing a warm jumper": ["i'm wearing a yellow jumper"],
-  "i'm wearing a hat in winter": ["it's winter", "i'm wearing a red hat"],
-  'sunny & hot': ['sunny', 'hot'],
-  'snowy & cold': ['snowy', 'cold'],
-  "it's sunny and hot": ["it's sunny", "it's hot"],
-  "it's snowy and cold": ["it's snowy", "it's cold"],
-  'yummy ice cream in summer': ['ice cream', "it's summer"],
-  'hot soup in winter': ['soup', "it's winter"],
-  "here's a new coat for mr beetle": ["here's a new coat for you"],
-  "hello let's learn english together tap a stop on the map": ['super', 'i love my new clothes'],
-  'red coat superstar': ['great', "i'm wearing a red coat"],
-  'colour artist': ['brilliant', 'crayons'],
-  'great sentences': ['excellent'],
-  'purple shorts champion': ['fantastic', "i'm wearing purple shorts"],
-  'happy spring': ['super', "it's spring"],
-  'sunny day star': ['brilliant', "it's sunny"],
-  'super listener': ['super'],
-  'amazing spelling': ['fantastic'],
-  'you are ready for the test': ['excellent', 'well done'],
-  'daily hero': ['daily task done'],
-  'family game winner': ['well done'],
-  'magical treasure': ['treasure chest'],
 };
 
 export function normalizeSpokenPhrase(raw: string): string {

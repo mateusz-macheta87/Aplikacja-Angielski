@@ -1,11 +1,25 @@
 // Auto-aligned millisecond audio sprite map for ElevenLabs British English narration.
-// Source: /assets/aistudio/kropka_sprite_bcc8b847.mp3 (246 clips, 470.4s).
+// Sources:
+//  - main:  /assets/aistudio/kropka_sprite_bcc8b847.mp3 (245 clips, 470.4s)
+//  - node1: /assets/aistudio/New_tts_node1_4e1c5dd3.mp3 (25 clips, 44.2s — Section A)
+//  - node2: /assets/aistudio/New_tts_node2_82bc5b9d.mp3 (26 clips, 42.5s — Section B)
+//  - node3: /assets/aistudio/New_tts_node3_7e263853.mp3 (49 clips, 83.4s — Section C)
 
-export const KROPKA_SPRITE_URL = '/assets/aistudio/kropka_sprite_bcc8b847.mp3';
+export type AudioSpriteId = 'main' | 'node1' | 'node2' | 'node3';
+
+export const AUDIO_SPRITE_URLS: Record<AudioSpriteId, string> = {
+  main: '/assets/aistudio/kropka_sprite_bcc8b847.mp3',
+  node1: '/assets/aistudio/New_tts_node1_4e1c5dd3.mp3',
+  node2: '/assets/aistudio/New_tts_node2_82bc5b9d.mp3',
+  node3: '/assets/aistudio/New_tts_node3_7e263853.mp3',
+};
+
+export const KROPKA_SPRITE_URL = AUDIO_SPRITE_URLS.main;
 
 export interface AudioSpriteCue {
   start: number; // seconds
   end: number;   // seconds
+  spriteId?: AudioSpriteId; // defaults to 'main'
 }
 
 export const KROPKA_AUDIO_SPRITE: Record<string, AudioSpriteCue> = {
@@ -254,4 +268,110 @@ export const KROPKA_AUDIO_SPRITE: Record<string, AudioSpriteCue> = {
   "good night put on your coat": { start: 463.305, end: 465.155 },
   "good night put on your jumper": { start: 465.665, end: 467.595 },
   "good night sleep well": { start: 468.105, end: 469.785 },
+
+  // --- Node 1: Section A (25 previously missing phrases — Sorting, Comic, Voice Studio, Wardrobe) ---
+  "park": { start: 0.060, end: 0.555, spriteId: 'node1' },
+  "playing in the park in summer": { start: 0.920, end: 2.305, spriteId: 'node1' },
+  "house": { start: 2.440, end: 2.960, spriteId: 'node1' },
+  "warm inside the house in winter": { start: 3.195, end: 5.055, spriteId: 'node1' },
+  "it's sunny and hot let's eat ice cream in the park": { start: 5.380, end: 8.470, spriteId: 'node1' },
+  "it's snowy and cold let's eat warm soup in the house": { start: 8.885, end: 12.775, spriteId: 'node1' },
+  "great pronunciation": { start: 13.160, end: 14.575, spriteId: 'node1' },
+  "pink bow": { start: 14.875, end: 15.675, spriteId: 'node1' },
+  "i'm wearing a pink bow": { start: 15.935, end: 17.345, spriteId: 'node1' },
+  "flower crown": { start: 17.635, end: 18.495, spriteId: 'node1' },
+  "i'm wearing a flower crown": { start: 18.725, end: 20.205, spriteId: 'node1' },
+  "green cap": { start: 20.560, end: 21.290, spriteId: 'node1' },
+  "golden crown": { start: 21.680, end: 22.615, spriteId: 'node1' },
+  "i'm wearing a golden crown": { start: 22.915, end: 24.520, spriteId: 'node1' },
+  "star glasses": { start: 24.860, end: 25.885, spriteId: 'node1' },
+  "i'm wearing star glasses": { start: 26.120, end: 27.775, spriteId: 'node1' },
+  "winter scarf": { start: 27.900, end: 28.695, spriteId: 'node1' },
+  "i'm wearing a winter scarf": { start: 29.035, end: 30.740, spriteId: 'node1' },
+  "butterfly wings": { start: 31.120, end: 32.190, spriteId: 'node1' },
+  "i'm wearing butterfly wings": { start: 32.485, end: 34.340, spriteId: 'node1' },
+  "hero cape": { start: 34.560, end: 35.360, spriteId: 'node1' },
+  "i'm wearing a hero cape": { start: 35.760, end: 37.485, spriteId: 'node1' },
+  "winter hat": { start: 38.000, end: 38.780, spriteId: 'node1' },
+  "i'm wearing a winter hat": { start: 38.880, end: 40.610, spriteId: 'node1' },
+  "hello i love learning english with you": { start: 41.055, end: 43.935, spriteId: 'node1' },
+
+  // --- Node 2: Section B (26 exact replacements for former approximate aliases) ---
+  "hello let's learn english together tap a stop on the map": { start: 0.030, end: 3.405, spriteId: 'node2' },
+  "i'm wearing a new green t-shirt": { start: 3.935, end: 5.740, spriteId: 'node2' },
+  "it's winter i'm wearing a hat": { start: 5.830, end: 7.680, spriteId: 'node2' },
+  "good night i'm wearing pyjamas": { start: 7.990, end: 10.105, spriteId: 'node2' },
+  "i'm wearing pyjamas": { start: 10.220, end: 11.525, spriteId: 'node2' },
+  "yummy ice cream in summer": { start: 11.910, end: 13.390, spriteId: 'node2' },
+  "hot soup in winter": { start: 13.605, end: 14.790, spriteId: 'node2' },
+  "sunny and hot": { start: 14.875, end: 16.025, spriteId: 'node2' },
+  "it's sunny and hot": { start: 16.340, end: 17.725, spriteId: 'node2' },
+  "snowy and cold": { start: 17.945, end: 19.140, spriteId: 'node2' },
+  "it's snowy and cold": { start: 19.415, end: 20.915, spriteId: 'node2' },
+  "i'm wearing a warm jumper": { start: 21.285, end: 22.650, spriteId: 'node2' },
+  "i'm wearing a hat in winter": { start: 22.940, end: 24.525, spriteId: 'node2' },
+  "here's a new coat for mr beetle": { start: 24.910, end: 26.965, spriteId: 'node2' },
+  "red coat superstar": { start: 27.345, end: 28.780, spriteId: 'node2' },
+  "colour artist": { start: 28.965, end: 29.945, spriteId: 'node2' },
+  "great sentences": { start: 30.060, end: 31.135, spriteId: 'node2' },
+  "purple shorts champion": { start: 31.310, end: 32.645, spriteId: 'node2' },
+  "happy spring": { start: 32.830, end: 33.625, spriteId: 'node2' },
+  "sunny day star": { start: 33.815, end: 34.690, spriteId: 'node2' },
+  "super listener": { start: 34.825, end: 35.670, spriteId: 'node2' },
+  "amazing spelling": { start: 35.785, end: 37.035, spriteId: 'node2' },
+  "you are ready for the test": { start: 37.310, end: 38.795, spriteId: 'node2' },
+  "daily hero": { start: 38.930, end: 39.775, spriteId: 'node2' },
+  "family game winner": { start: 39.975, end: 40.945, spriteId: 'node2' },
+  "magical treasure": { start: 41.030, end: 42.150, spriteId: 'node2' },
+
+  // --- Node 3: Section C (49 free-coloring Crayon Studio color x garment combinations) ---
+  "i'm wearing a green coat": { start: 0.035, end: 1.325, spriteId: 'node3' },
+  "i'm wearing a purple coat": { start: 1.550, end: 2.970, spriteId: 'node3' },
+  "i'm wearing a pink coat": { start: 3.110, end: 4.365, spriteId: 'node3' },
+  "i'm wearing an orange coat": { start: 4.545, end: 5.975, spriteId: 'node3' },
+  "i'm wearing a black coat": { start: 6.205, end: 7.455, spriteId: 'node3' },
+  "i'm wearing a blue jumper": { start: 7.655, end: 8.950, spriteId: 'node3' },
+  "i'm wearing a green jumper": { start: 9.160, end: 10.560, spriteId: 'node3' },
+  "i'm wearing a pink jumper": { start: 10.815, end: 12.160, spriteId: 'node3' },
+  "i'm wearing an orange jumper": { start: 12.430, end: 13.945, spriteId: 'node3' },
+  "i'm wearing a black jumper": { start: 14.145, end: 15.605, spriteId: 'node3' },
+  "i'm wearing a blue t-shirt": { start: 15.750, end: 17.260, spriteId: 'node3' },
+  "i'm wearing a purple t-shirt": { start: 17.510, end: 19.215, spriteId: 'node3' },
+  "i'm wearing a pink t-shirt": { start: 19.345, end: 20.885, spriteId: 'node3' },
+  "i'm wearing an orange t-shirt": { start: 21.045, end: 22.755, spriteId: 'node3' },
+  "i'm wearing a black t-shirt": { start: 22.900, end: 24.460, spriteId: 'node3' },
+  "i'm wearing a yellow cap": { start: 24.615, end: 26.075, spriteId: 'node3' },
+  "i'm wearing a purple cap": { start: 26.210, end: 27.575, spriteId: 'node3' },
+  "i'm wearing a pink cap": { start: 27.830, end: 29.115, spriteId: 'node3' },
+  "i'm wearing an orange cap": { start: 29.445, end: 30.790, spriteId: 'node3' },
+  "i'm wearing a black cap": { start: 31.125, end: 32.285, spriteId: 'node3' },
+  "i'm wearing a blue hat": { start: 32.525, end: 33.850, spriteId: 'node3' },
+  "i'm wearing a yellow hat": { start: 34.140, end: 35.500, spriteId: 'node3' },
+  "i'm wearing a green hat": { start: 35.785, end: 37.165, spriteId: 'node3' },
+  "i'm wearing a pink hat": { start: 37.485, end: 38.790, spriteId: 'node3' },
+  "i'm wearing an orange hat": { start: 39.090, end: 40.615, spriteId: 'node3' },
+  "i'm wearing a black hat": { start: 40.925, end: 42.350, spriteId: 'node3' },
+  "i'm wearing a red skirt": { start: 42.715, end: 44.345, spriteId: 'node3' },
+  "i'm wearing a blue skirt": { start: 44.700, end: 46.210, spriteId: 'node3' },
+  "i'm wearing a yellow skirt": { start: 46.390, end: 47.840, spriteId: 'node3' },
+  "i'm wearing an orange skirt": { start: 48.095, end: 49.700, spriteId: 'node3' },
+  "i'm wearing a black skirt": { start: 49.960, end: 51.430, spriteId: 'node3' },
+  "i'm wearing red shorts": { start: 51.710, end: 53.150, spriteId: 'node3' },
+  "i'm wearing yellow shorts": { start: 53.425, end: 54.935, spriteId: 'node3' },
+  "i'm wearing green shorts": { start: 55.250, end: 56.720, spriteId: 'node3' },
+  "i'm wearing pink shorts": { start: 57.010, end: 58.485, spriteId: 'node3' },
+  "i'm wearing black shorts": { start: 58.790, end: 60.170, spriteId: 'node3' },
+  "i'm wearing red trousers": { start: 60.450, end: 61.945, spriteId: 'node3' },
+  "i'm wearing yellow trousers": { start: 62.215, end: 63.780, spriteId: 'node3' },
+  "i'm wearing green trousers": { start: 64.100, end: 65.610, spriteId: 'node3' },
+  "i'm wearing purple trousers": { start: 65.925, end: 67.615, spriteId: 'node3' },
+  "i'm wearing pink trousers": { start: 68.030, end: 69.570, spriteId: 'node3' },
+  "i'm wearing orange trousers": { start: 69.965, end: 71.585, spriteId: 'node3' },
+  "i'm wearing black trousers": { start: 72.030, end: 73.565, spriteId: 'node3' },
+  "i'm wearing red shoes": { start: 73.990, end: 75.420, spriteId: 'node3' },
+  "i'm wearing blue shoes": { start: 75.540, end: 76.880, spriteId: 'node3' },
+  "i'm wearing green shoes": { start: 77.000, end: 78.410, spriteId: 'node3' },
+  "i'm wearing purple shoes": { start: 78.520, end: 79.995, spriteId: 'node3' },
+  "i'm wearing pink shoes": { start: 80.140, end: 81.465, spriteId: 'node3' },
+  "i'm wearing orange shoes": { start: 81.590, end: 83.100, spriteId: 'node3' },
 };

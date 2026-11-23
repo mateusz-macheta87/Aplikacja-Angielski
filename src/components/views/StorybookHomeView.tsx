@@ -173,20 +173,32 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
                 : 'Zrób zadanie dnia i zacznij serię!'}
             </span>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              playToneEffect('tap', soundEffectsEnabled);
-              onOpenScreen({
-                type: 'audio-quiz',
-                title: 'Zadanie dnia (5 pytań)',
-                dailyMode: true,
-              });
-            }}
-            className="text-sm font-bold text-[#5496E8] hover:underline whitespace-nowrap"
-          >
-            Zrób zadanie dnia →
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                playToneEffect('tap', soundEffectsEnabled);
+                onOpenScreen({ type: 'warmup' });
+              }}
+              className="btn-puffy-amber min-h-[40px] px-4 py-1.5 rounded-full font-display text-xs sm:text-sm font-bold whitespace-nowrap"
+            >
+              3-min rozgrzewka przed sprawdzianem
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                playToneEffect('tap', soundEffectsEnabled);
+                onOpenScreen({
+                  type: 'audio-quiz',
+                  title: 'Zadanie dnia (5 pytań)',
+                  dailyMode: true,
+                });
+              }}
+              className="text-sm font-bold text-[#5496E8] hover:underline whitespace-nowrap px-2"
+            >
+              Zadanie dnia →
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-7 gap-2">
@@ -315,35 +327,32 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
             </div>
           </button>
 
-          {/* Powtórka błędów */}
+          {/* Ogródek słówek Iskierki (zastępuje nieaktywną Powtórkę błędów) */}
           <button
             type="button"
-            disabled={mistakeCount === 0}
             onClick={() => {
               playToneEffect('tap', soundEffectsEnabled);
-              onOpenScreen({
-                type: 'audio-quiz',
-                title: 'Powtórka błędów',
-                mistakeOnly: true,
-              });
+              onOpenScreen({ type: 'garden' });
             }}
-            className={`storybook-card rounded-[26px] p-4 flex items-center gap-4 text-left transition-all min-h-[108px] ${
-              mistakeCount === 0
-                ? 'opacity-80 cursor-default'
-                : 'hover:-translate-y-0.5 hover:border-[#DFC29D] active:scale-[0.99]'
-            }`}
+            className="storybook-card rounded-[26px] p-4 flex items-center gap-4 text-left hover:-translate-y-0.5 hover:border-[#A7E3B9] active:scale-[0.99] transition-all min-h-[108px]"
           >
             <div className="w-[72px] h-[72px] rounded-2xl watercolor-frame overflow-hidden flex items-center justify-center shrink-0">
-              <ItemIllustration kind="rainy" className="w-full h-full" />
+              <img
+                src={STORYBOOK_ART.gameWordGarden}
+                alt="Bajkowa konewka podlewająca kwitnące słówka"
+                referrerPolicy="no-referrer"
+                loading="lazy"
+                className="w-full h-full object-cover scale-[1.06]"
+              />
             </div>
             <div className="min-w-0">
               <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
-                Powtórka błędów
+                Ogródek słówek
               </h3>
-              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
-                {mistakeCount === 0
-                  ? 'Brak błędów. Super!'
-                  : `Do poćwiczenia: ${mistakeCount}`}
+              <p className="mt-1 text-xs font-semibold text-[#226B3B]">
+                {mistakeCount > 0
+                  ? `Pączki do podlania: ${mistakeCount}`
+                  : `Kwitnie ${progress.masteredWordIds.length} kwiatków!`}
               </p>
             </div>
           </button>
@@ -452,6 +461,62 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               </h3>
               <p className="mt-1 text-xs font-semibold text-[#8A7465]">
                 Odkrywaj pary i słuchaj słówek
+              </p>
+            </div>
+          </button>
+
+          {/* Powiedz z Iskierką! (Studio Wymowy) */}
+          <button
+            type="button"
+            onClick={() => {
+              playToneEffect('tap', soundEffectsEnabled);
+              onOpenScreen({ type: 'voice-studio' });
+            }}
+            className="storybook-card rounded-[26px] p-4 flex items-center gap-4 text-left hover:-translate-y-0.5 hover:border-[#DFC29D] active:scale-[0.99] transition-all min-h-[108px]"
+          >
+            <div className="w-[72px] h-[72px] rounded-2xl watercolor-frame overflow-hidden flex items-center justify-center shrink-0">
+              <img
+                src={STORYBOOK_ART.gameVoiceStudio}
+                alt="Złoty bajkowy mikrofon ze śpiewającymi ptaszkami"
+                referrerPolicy="no-referrer"
+                loading="lazy"
+                className="w-full h-full object-cover scale-[1.06]"
+              />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
+                Powiedz z Iskierką!
+              </h3>
+              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
+                Nagraj głos i posłuchaj duszka
+              </p>
+            </div>
+          </button>
+
+          {/* Bajkowy Komiks */}
+          <button
+            type="button"
+            onClick={() => {
+              playToneEffect('tap', soundEffectsEnabled);
+              onOpenScreen({ type: 'comic' });
+            }}
+            className="storybook-card rounded-[26px] p-4 flex items-center gap-4 text-left hover:-translate-y-0.5 hover:border-[#DFC29D] active:scale-[0.99] transition-all min-h-[108px]"
+          >
+            <div className="w-[72px] h-[72px] rounded-2xl watercolor-frame overflow-hidden flex items-center justify-center shrink-0">
+              <img
+                src={STORYBOOK_ART.comicPanel2Coat}
+                alt="Bajkowy komiks Nowe ubrania Pana Chrząszcza"
+                referrerPolicy="no-referrer"
+                loading="lazy"
+                className="w-full h-full object-cover scale-[1.06]"
+              />
+            </div>
+            <div className="min-w-0">
+              <h3 className="font-display text-lg font-bold text-[#3E2F2B] leading-tight">
+                Bajkowy komiks
+              </h3>
+              <p className="mt-1 text-xs font-semibold text-[#8A7465]">
+                Historyjka z mówiącymi dymkami
               </p>
             </div>
           </button>

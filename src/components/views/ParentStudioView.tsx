@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import {
   ArrowLeft,
+  Camera,
   CheckCircle2,
   Code2,
   Download,
   Layers,
+  Loader2,
   Plus,
   RotateCcw,
+  Sparkles,
   Trash2,
   Upload,
 } from 'lucide-react';
@@ -94,8 +97,73 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
   const [jsonInput, setJsonInput] = useState('');
   const [jsonMessage, setJsonMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
+  // AI Photo Module Creator state
+  const [aiPhotoPreview, setAiPhotoPreview] = useState<string | null>(null);
+  const [aiPhotoBase64, setAiPhotoBase64] = useState<string | null>(null);
+  const [aiPhotoMime, setAiPhotoMime] = useState<string>('image/jpeg');
+  const [aiSubjectHint, setAiSubjectHint] = useState<SubjectId>('english');
+  const [aiTitleHint, setAiTitleHint] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiGeneratedModule, setAiGeneratedModule] = useState<LessonModule | null>(null);
+
   const activeProgress = progressByModule[activeModule.id];
   const masteryPct = computeMasteryPercent(activeModule, activeProgress);
+
+  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setAiError(null);
+    setAiGeneratedModule(null);
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setAiError('Wybierz zdjęcie w formacie JPG, PNG lub WebP.');
+      return;
+    }
+    if (file.size > 7 * 1024 * 1024) {
+      setAiError('Zdjęcie jest większe niż 7 MB. Wybierz mniejszy plik.');
+      return;
+    }
+    setAiPhotoMime(file.type);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = String(reader.result || '');
+      setAiPhotoPreview(dataUrl);
+      setAiPhotoBase64(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleGenerateFromPhoto = async () => {
+    if (!aiPhotoBase64) {
+      setAiError('Najpierw wybierz zdjęcie strony podręcznika lub notatki.');
+      return;
+    }
+    setAiLoading(true);
+    setAiError(null);
+    setAiGeneratedModule(null);
+    try {
+      const resp = await fetch('/api/generate-module-from-photo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: aiPhotoBase64,
+          mimeType: aiPhotoMime,
+          subjectHint: aiSubjectHint,
+          titleHint: aiTitleHint,
+        }),
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok || !data.module) {
+        setAiError(data.error || 'Nie udało się utworzyć modułu ze zdjęcia.');
+        return;
+      }
+      setAiGeneratedModule(data.module as LessonModule);
+    } catch {
+      setAiError('Błąd połączenia z serwerem. Sprawdź czy aplikacja działa poprawnie.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleAddDraftWord = () => {
     if (!wordDraft.trim() || !transDraft.trim()) {
@@ -181,9 +249,10 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
+    const safeFilename = activeModule.id.replace(/[^a-zA-Z0-9_-]/g, '_') || 'module';
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${activeModule.id}.json`;
+    a.download = `${safeFilename}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -395,8 +464,154 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
         </div>
       )}
 
-      {/* TAB 2: MODULE CREATOR & JSON IMPORT */}
+      {/* TAB 2: MODULE CREATOR, AI PHOTO SCANNER & JSON IMPORT */}
       {section === 'builder' && (
+        <div className="space-y-6">
+          {/* AI Textbook Photo Module Creator */}
+          <section className="rounded-3xl bg-gradient-to-br from-[#FFFDF8] to-[#FEF7E4] border-2 border-[#EED9BD] p-6 space-y-4 shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="font-display text-xl font-bold text-[#3E2F2B] flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-[#D9820B]" aria-hidden="true" />
+                  Kreator nowej lekcji ze zdjęcia podręcznika (AI)
+                </h2>
+                <p className="mt-1 text-sm text-[#6E5B4F]">
+                  Zrób zdjęcie nowej strony z podręcznika (angielski, matematyka, przyroda lub polski), a aplikacja automatycznie odczyta słówka i przygotuje cały zestaw gier oraz quiz audio!
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+              <div className="md:col-span-5 space-y-3">
+                <label className="flex flex-col items-center justify-center min-h-[156px] rounded-2xl border-2 border-dashed border-[#DFC19B] bg-white hover:border-[#5496E8] cursor-pointer p-4 text-center transition-colors">
+                  {aiPhotoPreview ? (
+                    <img
+                      src={aiPhotoPreview}
+                      alt="Podgląd zdjęcia strony podręcznika"
+                      className="max-h-36 rounded-xl object-contain"
+                    />
+                  ) : (
+                    <>
+                      <Camera className="w-8 h-8 text-[#5496E8] mb-2" aria-hidden="true" />
+                      <span className="font-display text-sm font-bold text-[#3E2F2B]">
+                        Wybierz lub zrób zdjęcie strony
+                      </span>
+                      <span className="text-xs text-[#8A7465] mt-1">
+                        JPG, PNG lub WebP · maks. 7 MB
+                      </span>
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handlePhotoFileChange}
+                    className="sr-only"
+                  />
+                </label>
+              </div>
+
+              <div className="md:col-span-7 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="ai-photo-subject" className="block text-xs font-bold text-[#6E5B4F] mb-1">
+                      Przedmiot na zdjęciu
+                    </label>
+                    <select
+                      id="ai-photo-subject"
+                      value={aiSubjectHint}
+                      onChange={(e) => setAiSubjectHint(e.target.value as SubjectId)}
+                      className="w-full min-h-[44px] rounded-xl border border-[#DFC9AE] bg-white px-3 py-2 text-sm"
+                    >
+                      <option value="english">Język angielski</option>
+                      <option value="math">Matematyka</option>
+                      <option value="polish">Język polski</option>
+                      <option value="science">Przyroda</option>
+                      <option value="custom">Inny przedmiot</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="ai-photo-title" className="block text-xs font-bold text-[#6E5B4F] mb-1">
+                      Własna nazwa lekcji (opcjonalnie)
+                    </label>
+                    <input
+                      id="ai-photo-title"
+                      type="text"
+                      value={aiTitleHint}
+                      onChange={(e) => setAiTitleHint(e.target.value)}
+                      placeholder="np. Unit 2: My Toys"
+                      className="w-full min-h-[44px] rounded-xl border border-[#DFC9AE] bg-white px-3.5 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={aiLoading || !aiPhotoBase64}
+                  onClick={handleGenerateFromPhoto}
+                  className={`min-h-[48px] px-6 rounded-full font-display text-sm font-bold inline-flex items-center gap-2 ${
+                    aiLoading || !aiPhotoBase64
+                      ? 'bg-[#E8DFD3] text-[#9A897A] cursor-not-allowed'
+                      : 'btn-puffy-amber'
+                  }`}
+                >
+                  {aiLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                      Analizuję zdjęcie podręcznika...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" aria-hidden="true" />
+                      Utwórz moduł ze zdjęcia
+                    </>
+                  )}
+                </button>
+
+                {aiError && (
+                  <p className="rounded-xl bg-rose-50 border border-rose-200 px-3.5 py-2.5 text-xs font-bold text-rose-700">
+                    {aiError}
+                  </p>
+                )}
+
+                {aiGeneratedModule && (
+                  <div className="rounded-2xl bg-[#EEF9F1] border-2 border-[#A7E3B9] p-4 space-y-2.5">
+                    <p className="font-display text-base font-bold text-[#226B3B] flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5" aria-hidden="true" />
+                      Gotowe! Rozpoznano: „{aiGeneratedModule.title}”
+                    </p>
+                    <p className="text-xs font-semibold text-[#3B6B4B]">
+                      Odczytane słówka: {aiGeneratedModule.vocabulary.length} · Zdania do rozsypanki: {aiGeneratedModule.sentences.length}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {aiGeneratedModule.vocabulary.slice(0, 8).map((v) => (
+                        <span
+                          key={v.id}
+                          className="px-2.5 py-1 rounded-full bg-white border border-[#BFE8CC] text-xs font-bold text-[#3E2F2B]"
+                        >
+                          {v.word} — {v.translation}
+                        </span>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onAddCustomModule(aiGeneratedModule);
+                        onSelectModule(aiGeneratedModule.id);
+                        setFormSuccess(`Nowy moduł AI „${aiGeneratedModule.title}” został zapisany i uruchomiony!`);
+                        setAiGeneratedModule(null);
+                        setAiPhotoPreview(null);
+                        setAiPhotoBase64(null);
+                      }}
+                      className="btn-puffy-green min-h-[44px] px-6 rounded-full font-display text-sm font-bold"
+                    >
+                      Zapisz i uruchom ten moduł!
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <form
             onSubmit={handleSaveNewModule}
@@ -593,6 +808,7 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
               </button>
             </div>
           </div>
+        </div>
         </div>
       )}
 

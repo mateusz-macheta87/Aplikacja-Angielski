@@ -15,9 +15,10 @@ export interface WardrobeAccessory {
   namePl: string;
   englishName: string;
   priceStars: number;
-  slot: 'head' | 'eyes' | 'neck' | 'back';
+  slot: 'head' | 'eyes' | 'neck' | 'back' | 'hand';
   slotLabelPl: string;
   descriptionPl: string;
+  secretTreasureOnly?: boolean;
 }
 
 export const STICKERS_CATALOG: StickerItem[] = [
@@ -120,6 +121,20 @@ export const STICKERS_CATALOG: StickerItem[] = [
     illustration: 'winter',
     unlockHintPl: 'Otwórz Skrzynię Skarbów na mapie',
   },
+  {
+    id: 'stk-voice',
+    title: 'Śpiewający Słowik',
+    englishPraise: 'Great pronunciation!',
+    illustration: 'park',
+    unlockHintPl: 'Nagraj swój głos w „Powiedz z Iskierką!”',
+  },
+  {
+    id: 'stk-comic',
+    title: 'Mistrzyni Bajek',
+    englishPraise: 'I love my new clothes!',
+    illustration: 'house',
+    unlockHintPl: 'Przeczytaj bajkowy komiks Pana Chrząszcza',
+  },
 ];
 
 export const WARDROBE_ACCESSORIES: WardrobeAccessory[] = [
@@ -194,5 +209,15 @@ export const WARDROBE_ACCESSORIES: WardrobeAccessory[] = [
     slot: 'back',
     slotLabelPl: 'Na plecy',
     descriptionPl: 'Aksamitna malinowa peleryna ze złotą zapinką w kształcie gwiazdki.',
+  },
+  {
+    id: 'acc-winter-hat',
+    namePl: 'Czapka Skarbu z pomponem',
+    englishName: 'Winter hat',
+    priceStars: 0,
+    slot: 'head',
+    slotLabelPl: 'Na głowę · Skarb',
+    descriptionPl: 'Puszysta lawendowa czapka ze złotym pomponem — sekretna nagroda ze Skrzyni Skarbów!',
+    secretTreasureOnly: true,
   },
 ];

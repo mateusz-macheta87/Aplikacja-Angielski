@@ -2,8 +2,10 @@ import { IllustrationKey } from '../types/curriculum';
 
 // Bespoke children's picture-book watercolor illustrations generated for English with Iskierka
 export const STORYBOOK_ART = {
-  // Hero, Map, Mascot, Treasure & Victory Banner
+  // Hero, Map, Mascot Emotions, Treasure & Victory Banner
   mascotHero: '/src/assets/images/mascot_hero_1795430767409.jpg',
+  mascotThinking: '/src/assets/images/mascot_thinking_1795436047155.jpg',
+  mascotCelebrating: '/src/assets/images/mascot_celebrating_1795436046150.jpg',
   heroFriends: '/src/assets/images/hero_storybook_friends_1795430767922.jpg',
   mapFourSeasons: '/src/assets/images/map_four_seasons_bg_1795430766835.jpg',
   treasureChest: '/src/assets/images/treasure_chest_storybook_1795430767491.jpg',
@@ -17,9 +19,19 @@ export const STORYBOOK_ART = {
   gameLightning: '/src/assets/images/icon_magic_lightning_1795433266331.jpg',
   gameDuel: '/src/assets/images/icon_duel_medals_1795433327708.jpg',
   gameStickers: '/src/assets/images/icon_sticker_album_1795433327419.jpg',
+  gameWordGarden: '/src/assets/images/game_word_garden_1795436047271.jpg',
+  gameVoiceStudio: '/src/assets/images/game_voice_studio_1795436046269.jpg',
   memoryCardBack: '/src/assets/images/icon_memory_cards_1795433266197.jpg',
   wardrobeStage: '/src/assets/images/wardrobe_boutique_stage_1795434301841.jpg',
   mascotCutout: '/src/assets/images/cutout_mascot_hero.png',
+  mascotThinkingCutout: '/src/assets/images/cutout_mascot_thinking.png',
+  mascotCelebratingCutout: '/src/assets/images/cutout_mascot_celebrating.png',
+
+  // 4-Panel Interactive Comic Storybook: Mr Beetle's New Clothes
+  comicPanel1Rain: '/src/assets/images/comic_panel_1_rain_1795436048225.jpg',
+  comicPanel2Coat: '/src/assets/images/comic_panel_2_coat_1795436046923.jpg',
+  comicPanel3Shorts: '/src/assets/images/comic_panel_3_shorts_1795436047988.jpg',
+  comicPanel4Party: '/src/assets/images/comic_panel_4_party_1795436047047.jpg',
 } as const;
 
 export interface ItemArtEntry {
@@ -28,12 +40,45 @@ export interface ItemArtEntry {
   zoomClass?: string;
 }
 
+export const ISKIERKA_OUTFIT_PORTRAIT: Record<string, string> = {
+  'acc-bow': '/src/assets/images/portrait_iskierka_bow.jpg',
+  'acc-flowers': '/src/assets/images/iskierka_wear_flowers_1795438408571.jpg',
+  'acc-cap': '/src/assets/images/portrait_iskierka_cap.jpg',
+  'acc-crown': '/src/assets/images/portrait_iskierka_crown.jpg',
+  'acc-winter-hat': '/src/assets/images/iskierka_wear_winter_hat_1795437671829.jpg',
+  'acc-glasses': '/src/assets/images/iskierka_wear_glasses_1795437673180.jpg',
+  'acc-scarf': '/src/assets/images/iskierka_wear_scarf_1795437671470.jpg',
+  'acc-wings': '/src/assets/images/portrait_iskierka_wings.jpg',
+  'acc-cape': '/src/assets/images/iskierka_wear_cape_1795438439972.jpg',
+};
+
+export const ISKIERKA_OUTFIT_STAGE: Record<string, string> = {
+  'acc-bow': '/src/assets/images/stage_iskierka_bow.png',
+  'acc-flowers': '/src/assets/images/stage_iskierka_flowers.png',
+  'acc-cap': '/src/assets/images/stage_iskierka_cap.png',
+  'acc-crown': '/src/assets/images/stage_iskierka_crown.png',
+  'acc-winter-hat': '/src/assets/images/stage_iskierka_winter_hat.png',
+  'acc-glasses': '/src/assets/images/stage_iskierka_glasses.png',
+  'acc-scarf': '/src/assets/images/stage_iskierka_scarf.png',
+  'acc-wings': '/src/assets/images/stage_iskierka_wings.png',
+  'acc-cape': '/src/assets/images/stage_iskierka_cape.png',
+};
+
+// Full cohesive boutique-scene illustrations (4:3) rendered edge-to-edge without any cutout overlay
+export const ISKIERKA_OUTFIT_SCENE: Record<string, string> = {
+  'acc-cap': '/assets/aistudio/Gemini_Generated_Image_ij4b0vij4b0vij4b_ba41ed95.jpg',
+};
+
 export const WARDROBE_CUTOUT_MAP: Record<string, string> = {
   'acc-bow': '/src/assets/images/cutout_acc_bow.png',
+  'acc-flowers': '/src/assets/images/cutout_acc_flower_arc.png',
   'acc-cap': '/src/assets/images/cutout_acc_cap.png',
   'acc-crown': '/src/assets/images/cutout_acc_crown.png',
+  'acc-winter-hat': '/src/assets/images/cutout_acc_winter_hat.png',
   'acc-glasses': '/src/assets/images/cutout_acc_glasses.png',
+  'acc-scarf': '/src/assets/images/cutout_acc_scarf.png',
   'acc-wings': '/src/assets/images/cutout_acc_wings.png',
+  'acc-cape': '/src/assets/images/cutout_acc_cape.png',
 };
 
 export const WARDROBE_ART_MAP: Record<string, ItemArtEntry> = {
@@ -52,6 +97,10 @@ export const WARDROBE_ART_MAP: Record<string, ItemArtEntry> = {
   'acc-flowers': {
     src: '/src/assets/images/acc_flower_wreath_1795434301268.jpg',
     altPl: 'Wianek leśnej wróżki ze stokrotek i wstążek',
+  },
+  'acc-winter-hat': {
+    src: '/src/assets/images/item_winter_hat_1795433266838.jpg',
+    altPl: 'Zimowa lawendowa czapka z puszystym złotym pomponem ze Skrzyni Skarbów',
   },
   'acc-glasses': {
     src: '/src/assets/images/acc_star_glasses_1795434301299.jpg',

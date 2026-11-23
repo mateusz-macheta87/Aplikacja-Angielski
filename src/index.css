@@ -110,6 +110,84 @@
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
 
+@keyframes ambient-fall {
+  0% {
+    transform: translate3d(0, -14px, 0) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.82;
+  }
+  85% {
+    opacity: 0.72;
+  }
+  100% {
+    transform: translate3d(18px, 190px, 0) rotate(140deg);
+    opacity: 0;
+  }
+}
+
+@keyframes ambient-mote {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(0.85);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate3d(6px, -12px, 0) scale(1.15);
+    opacity: 0.85;
+  }
+}
+
+@keyframes chest-shake {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  20% { transform: rotate(-6deg) scale(1.04); }
+  40% { transform: rotate(6deg) scale(1.06); }
+  60% { transform: rotate(-5deg) scale(1.08); }
+  80% { transform: rotate(5deg) scale(1.1); }
+}
+
+@keyframes burst-petal {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.4) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--tx, 40px), var(--ty, -80px), 0) scale(1.15) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+@keyframes flower-bloom {
+  0% { transform: scale(0.75); }
+  55% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+.animate-ambient-fall {
+  animation: ambient-fall 9s linear infinite;
+  will-change: transform, opacity;
+}
+
+.animate-ambient-mote {
+  animation: ambient-mote 4.5s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-chest-shake {
+  animation: chest-shake 0.55s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-burst-petal {
+  animation: burst-petal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-flower-bloom {
+  animation: flower-bloom 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
