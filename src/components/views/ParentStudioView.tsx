@@ -103,6 +103,8 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
   const [aiPhotoMime, setAiPhotoMime] = useState<string>('image/jpeg');
   const [aiSubjectHint, setAiSubjectHint] = useState<SubjectId>('english');
   const [aiTitleHint, setAiTitleHint] = useState('');
+  const [aiParentPin, setAiParentPin] = useState('');
+  const [aiPinRequired, setAiPinRequired] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiGeneratedModule, setAiGeneratedModule] = useState<LessonModule | null>(null);
@@ -142,9 +144,13 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
     setAiError(null);
     setAiGeneratedModule(null);
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (aiParentPin.trim()) {
+        headers['X-Parent-Pin'] = aiParentPin.trim();
+      }
       const resp = await fetch('/api/generate-module-from-photo', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           imageBase64: aiPhotoBase64,
           mimeType: aiPhotoMime,
@@ -153,11 +159,21 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
         }),
       });
       const data = await resp.json().catch(() => ({}));
+      if (resp.status === 401 && data.requiresPin) {
+        setAiPinRequired(true);
+        setAiError(data.error || 'Wpisz PIN rodzica, aby uruchomić analizę zdjęcia.');
+        return;
+      }
       if (!resp.ok || !data.module) {
         setAiError(data.error || 'Nie udało się utworzyć modułu ze zdjęcia.');
         return;
       }
-      setAiGeneratedModule(data.module as LessonModule);
+      const validated = validateLessonModuleJson(JSON.stringify(data.module));
+      if (!validated.valid || !validated.module) {
+        setAiError(validated.error || 'Wygenerowany moduł nie przeszedł walidacji.');
+        return;
+      }
+      setAiGeneratedModule(validated.module);
     } catch {
       setAiError('Błąd połączenia z serwerem. Sprawdź czy aplikacja działa poprawnie.');
     } finally {
@@ -170,16 +186,20 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
       setFormError('Wpisz zarówno słówko/pojęcie, jak i jego polskie tłumaczenie.');
       return;
     }
+    if (draftWords.length >= 60) {
+      setFormError('Jeden moduł może zawierać maksymalnie 60 słówek lub pojęć.');
+      return;
+    }
     setFormError(null);
     const newItem: VocabItem = {
       id: `w-${Date.now()}-${draftWords.length}`,
-      word: wordDraft.trim(),
-      translation: transDraft.trim(),
+      word: wordDraft.trim().slice(0, 80),
+      translation: transDraft.trim().slice(0, 100),
       category: 'general',
       categoryLabel: 'Słownictwo',
       illustration: subject === 'math' ? 'math-card' : 'generic',
-      exampleSentence: exampleDraft.trim() || wordDraft.trim(),
-      exampleTranslation: transDraft.trim(),
+      exampleSentence: (exampleDraft.trim() || wordDraft.trim()).slice(0, 160),
+      exampleTranslation: transDraft.trim().slice(0, 160),
     };
     setDraftWords((prev) => [...prev, newItem]);
     setWordDraft('');
@@ -206,9 +226,9 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
       custom: 'Inny przedmiot',
     };
 
-    const newMod: LessonModule = {
+    const candidate: LessonModule = {
       id: `custom-${Date.now()}`,
-      title: title.trim(),
+      title: title.trim().slice(0, 100),
       subtitle: `Własny moduł tematyczny (${draftWords.length} haseł)`,
       subject,
       subjectLabel: subjectLabels[subject],
@@ -221,12 +241,18 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
       crayonChallenges: [],
     };
 
-    onAddCustomModule(newMod);
-    onSelectModule(newMod.id);
+    const validated = validateLessonModuleJson(JSON.stringify(candidate));
+    if (!validated.valid || !validated.module) {
+      setFormError(validated.error || 'Nie udało się zapisać modułu — sprawdź wpisane dane.');
+      return;
+    }
+
+    onAddCustomModule(validated.module);
+    onSelectModule(validated.module.id);
     setTitle('');
     setDraftWords([]);
     setFormError(null);
-    setFormSuccess(`Moduł „${newMod.title}” został zapisany i ustawiony jako aktywny!`);
+    setFormSuccess(`Moduł „${validated.module.title}” został zapisany i ustawiony jako aktywny!`);
   };
 
   const handleImportJson = () => {
@@ -543,6 +569,23 @@ export const ParentStudioView: React.FC<ParentStudioViewProps> = ({
                     />
                   </div>
                 </div>
+
+                {aiPinRequired && (
+                  <div>
+                    <label htmlFor="ai-parent-pin" className="block text-xs font-bold text-[#6E5B4F] mb-1">
+                      PIN rodzica (wymagany przez serwer)
+                    </label>
+                    <input
+                      id="ai-parent-pin"
+                      type="password"
+                      autoComplete="off"
+                      value={aiParentPin}
+                      onChange={(e) => setAiParentPin(e.target.value)}
+                      placeholder="Wpisz PIN rodzica"
+                      className="w-full sm:max-w-xs min-h-[44px] rounded-xl border border-[#DFC9AE] bg-white px-3.5 py-2 text-sm"
+                    />
+                  </div>
+                )}
 
                 <button
                   type="button"

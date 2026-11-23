@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Droplets, Flower2, Sparkles, Volume2 } from 'lucide-react';
 import { LessonModule, ModuleProgress, VocabItem } from '../../types/curriculum';
 import { playToneEffect, speakText } from '../../engine/audioEngine';
@@ -28,6 +28,16 @@ export const WordGardenView: React.FC<WordGardenViewProps> = ({
   const [bonusIndex, setBonusIndex] = useState(0);
   const [bloomingWordId, setBloomingWordId] = useState<string | null>(null);
   const [hintText, setHintText] = useState<string | null>(null);
+  const waterTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (waterTimerRef.current !== null) {
+        clearTimeout(waterTimerRef.current);
+        waterTimerRef.current = null;
+      }
+    };
+  }, []);
 
   const thirstyWords = useMemo(
     () =>
@@ -52,7 +62,7 @@ export const WordGardenView: React.FC<WordGardenViewProps> = ({
   }, [module.vocabulary, progress.masteredWordIds]);
 
   const activeTarget: VocabItem | null =
-    thirstyWords[0] || (bonusMode ? unmasteredPool[bonusIndex % unmasteredPool.length] : null);
+    thirstyWords[0] || (bonusMode && unmasteredPool.length > 0 ? unmasteredPool[bonusIndex % unmasteredPool.length] : null);
 
   const options = useMemo(() => {
     if (!activeTarget) return [];
@@ -82,7 +92,9 @@ export const WordGardenView: React.FC<WordGardenViewProps> = ({
       playToneEffect('splash', soundEffectsEnabled);
       setHintText(null);
       setBloomingWordId(activeTarget.id);
-      window.setTimeout(() => {
+      if (waterTimerRef.current !== null) clearTimeout(waterTimerRef.current);
+      waterTimerRef.current = window.setTimeout(() => {
+        waterTimerRef.current = null;
         onWaterWordSuccess(activeTarget.id);
         setBloomingWordId(null);
         if (bonusMode) {

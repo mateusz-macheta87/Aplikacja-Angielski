@@ -55,15 +55,33 @@ export const VoiceStudioView: React.FC<VoiceStudioViewProps> = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const playbackCtxRef = useRef<AudioContext | null>(null);
 
   const current = prompts[idx];
 
   useEffect(() => {
     return () => {
       if (recordingUrl) URL.revokeObjectURL(recordingUrl);
-      streamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, [recordingUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try {
+          mediaRecorderRef.current.stop();
+        } catch {
+          // Ignore stop errors on unmount
+        }
+      }
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      if (playbackCtxRef.current && playbackCtxRef.current.state !== 'closed') {
+        playbackCtxRef.current.close().catch(() => undefined);
+        playbackCtxRef.current = null;
+      }
+    };
+  }, []);
 
   const clearRecording = () => {
     if (recordingUrl) URL.revokeObjectURL(recordingUrl);
@@ -127,10 +145,22 @@ export const VoiceStudioView: React.FC<VoiceStudioViewProps> = ({
   const handlePlaySpriteVoice = async () => {
     if (!recordingBlob) return;
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const ctx = new AudioCtx();
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) {
+        handlePlayNormal();
+        return;
+      }
+      if (!playbackCtxRef.current || playbackCtxRef.current.state === 'closed') {
+        playbackCtxRef.current = new AudioCtx();
+      }
+      const ctx = playbackCtxRef.current;
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
       const buf = await recordingBlob.arrayBuffer();
-      const decoded = await ctx.decodeAudioData(buf);
+      const decoded = await ctx.decodeAudioData(buf.slice(0));
       const src = ctx.createBufferSource();
       src.buffer = decoded;
       src.playbackRate.value = 1.38;

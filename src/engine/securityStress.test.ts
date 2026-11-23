@@ -255,5 +255,134 @@ test('HTTP API stress & security suite: headers, spoofed MIME, malformed JSON, o
       burstStatuses.push(r.status);
     }
     assert.equal(burstStatuses.slice(5).every((s) => s === 429), true);
+
+    // 6. CSP header present & unknown /api/* returns 404 JSON (never HTML)
+    const notFoundResp = await fetch(`${baseUrl}/api/does-not-exist`);
+    assert.equal(notFoundResp.status, 404);
+    assert.ok(notFoundResp.headers.get('content-security-policy')?.includes("default-src 'self'"));
+    const notFoundBody = (await notFoundResp.json()) as { error?: string };
+    assert.ok(notFoundBody.error);
+
+    // 7. Cross-site Origin is rejected with 403
+    const evilOriginResp = await fetch(`${baseUrl}/api/generate-module-from-photo`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Origin: 'https://evil.example',
+      },
+      body: JSON.stringify({ mimeType: 'image/png', imageBase64: validPng }),
+    });
+    assert.equal(evilOriginResp.status, 403);
   }, 5);
+});
+
+test('X-Forwarded-For spoofing defense, global rate limit, and optional parent PIN authentication', async () => {
+  const app = createApp({
+    maxPhotoRequestsPerWindow: 2,
+    maxGlobalPhotoRequestsPerWindow: 4,
+    trustProxy: 1,
+    parentApiPin: '2468',
+  });
+  const server = http.createServer(app);
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const addr = server.address();
+  assert.ok(addr && typeof addr === 'object');
+  const baseUrl = `http://127.0.0.1:${addr.port}`;
+  const validPng = makeValidPngBase64();
+
+  try {
+    // 1. Missing or wrong PIN returns 401 with requiresPin: true
+    const noPinResp = await fetch(`${baseUrl}/api/generate-module-from-photo`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mimeType: 'image/png', imageBase64: validPng }),
+    });
+    assert.equal(noPinResp.status, 401);
+    const noPinBody = (await noPinResp.json()) as { requiresPin?: boolean };
+    assert.equal(noPinBody.requiresPin, true);
+
+    // 2. Spoofing leftmost XFF entry while proxy appends same real IP (203.0.113.50) MUST still hit 429 on 3rd request
+    const statuses: number[] = [];
+    for (let i = 0; i < 3; i++) {
+      const r = await fetch(`${baseUrl}/api/generate-module-from-photo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Parent-Pin': '2468',
+          'X-Forwarded-For': `10.0.0.${i + 1}, 203.0.113.50`,
+        },
+        body: JSON.stringify({ mimeType: 'image/png', imageBase64: validPng }),
+      });
+      statuses.push(r.status);
+    }
+    assert.notEqual(statuses[0], 429);
+    assert.notEqual(statuses[1], 429);
+    assert.equal(statuses[2], 429);
+
+    // 3. Global rate limit (4 total) triggers 429 even across rotating distinct IPs
+    const r3 = await fetch(`${baseUrl}/api/generate-module-from-photo`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Parent-Pin': '2468',
+        'X-Forwarded-For': '203.0.113.51',
+      },
+      body: JSON.stringify({ mimeType: 'image/png', imageBase64: validPng }),
+    });
+    const r4 = await fetch(`${baseUrl}/api/generate-module-from-photo`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Parent-Pin': '2468',
+        'X-Forwarded-For': '203.0.113.52',
+      },
+      body: JSON.stringify({ mimeType: 'image/png', imageBase64: validPng }),
+    });
+    const r5 = await fetch(`${baseUrl}/api/generate-module-from-photo`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Parent-Pin': '2468',
+        'X-Forwarded-For': '203.0.113.53',
+      },
+      body: JSON.stringify({ mimeType: 'image/png', imageBase64: validPng }),
+    });
+    assert.notEqual(r3.status, 429);
+    assert.notEqual(r4.status, 429);
+    assert.equal(r5.status, 429);
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+});
+
+test('all referenced storybook art and audio sprite assets exist on disk', async () => {
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const {
+    ISKIERKA_OUTFIT_PORTRAIT,
+    ISKIERKA_OUTFIT_SCENE,
+    ISKIERKA_OUTFIT_STAGE,
+    ITEM_ART_MAP,
+    STORYBOOK_ART,
+    WARDROBE_ART_MAP,
+  } = await import('../data/storybookArt');
+  const { AUDIO_SPRITE_URLS } = await import('../data/kropkaAudioSprite');
+
+  const urls: string[] = [
+    ...Object.values(STORYBOOK_ART),
+    ...Object.values(ISKIERKA_OUTFIT_PORTRAIT),
+    ...Object.values(ISKIERKA_OUTFIT_STAGE),
+    ...Object.values(ISKIERKA_OUTFIT_SCENE),
+    ...Object.values(WARDROBE_ART_MAP).map((e) => e.src),
+    ...Object.values(ITEM_ART_MAP).map((e) => e!.src),
+    ...Object.values(AUDIO_SPRITE_URLS),
+  ];
+
+  const rootDir = path.resolve(import.meta.dirname, '../..');
+  for (const url of urls) {
+    const filePath = url.startsWith('/src/')
+      ? path.join(rootDir, url.slice(1))
+      : path.join(rootDir, 'public', url.slice(1));
+    assert.equal(fs.existsSync(filePath), true, `Missing referenced asset: ${url} (${filePath})`);
+  }
 });

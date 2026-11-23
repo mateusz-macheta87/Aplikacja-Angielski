@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AppStateStorage,
   ChildScreen,
@@ -14,7 +14,7 @@ import {
   saveAppState,
 } from './engine/storage';
 import { formatLocalDateKey, getAvailableStars } from './engine/gameEngine';
-import { preloadAudioSprite } from './engine/audioEngine';
+import { preloadAudioSprite, stopSpeaking } from './engine/audioEngine';
 import { STICKERS_CATALOG, WARDROBE_ACCESSORIES } from './data/rewardsCatalog';
 import { StorybookHomeView } from './components/views/StorybookHomeView';
 import { DictionaryView } from './components/views/DictionaryView';
@@ -31,6 +31,49 @@ import { WordGardenView } from './components/views/WordGardenView';
 import { VoiceStudioView } from './components/views/VoiceStudioView';
 import { ComicStoryView } from './components/views/ComicStoryView';
 import { WarmupView } from './components/views/WarmupView';
+
+class AppErrorBoundary extends React.Component<
+  { children: React.ReactNode; onReset: () => void },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error('Unhandled view error:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen storybook-canvas flex items-center justify-center p-6">
+          <div className="storybook-card rounded-[32px] p-8 max-w-md text-center space-y-4">
+            <h1 className="font-display text-2xl font-bold text-[#3E2F2B]">
+              Ups! Coś się na chwilę zacięło
+            </h1>
+            <p className="text-sm font-semibold text-[#6E5B4F]">
+              Twoje gwiazdki i naklejki są bezpieczne. Wróć na mapę przygód, aby kontynuować naukę!
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                this.setState({ hasError: false });
+                this.props.onReset();
+              }}
+              className="btn-puffy-green min-h-[50px] px-7 rounded-full font-display font-bold"
+            >
+              Wróć na mapę przygód
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function getInitialScreen(): ChildScreen {
   if (typeof window !== 'undefined') {
@@ -84,6 +127,7 @@ export default function App() {
   }, [appState.progressByModule, activeModule.id]);
 
   const navigateTo = (next: ChildScreen) => {
+    stopSpeaking();
     setScreen(next);
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -171,7 +215,7 @@ export default function App() {
         masteredWordIds: exists
           ? curr.masteredWordIds.filter((id) => id !== wordId)
           : [...curr.masteredWordIds, wordId],
-        stars: exists ? curr.stars : curr.stars + 1,
+        stars: exists ? Math.max(curr.starsSpent, curr.stars - 1) : curr.stars + 1,
       };
     });
   };
@@ -263,7 +307,7 @@ export default function App() {
   const handleAddCustomModule = (mod: LessonModule) => {
     setAppState((prev) => ({
       ...prev,
-      customModules: [...prev.customModules.filter((m) => m.id !== mod.id), mod],
+      customModules: [...prev.customModules.filter((m) => m.id !== mod.id), mod].slice(-25),
     }));
   };
 
@@ -291,6 +335,7 @@ export default function App() {
   };
 
   return (
+    <AppErrorBoundary onReset={() => navigateTo({ type: 'map' })}>
     <div className="min-h-screen storybook-canvas text-[#3E2F2B]">
       <main>
         {screen.type === 'map' && (
@@ -556,5 +601,6 @@ export default function App() {
         )}
       </main>
     </div>
+    </AppErrorBoundary>
   );
 }

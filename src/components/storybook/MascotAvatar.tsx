@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ISKIERKA_OUTFIT_PORTRAIT,
   ISKIERKA_OUTFIT_STAGE,
@@ -56,6 +56,10 @@ export const MascotAvatar: React.FC<MascotAvatarProps> = ({
     }
     return MASCOT_IMAGE_URL;
   })();
+
+  useEffect(() => {
+    setImgError(false);
+  }, [portraitSrc]);
 
   return (
     <div

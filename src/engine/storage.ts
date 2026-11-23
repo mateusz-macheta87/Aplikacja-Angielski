@@ -125,7 +125,7 @@ export function loadAppState(): AppStateStorage {
   if (typeof window === 'undefined') return getDefaultAppState();
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw || raw.length > 512 * 1024) return getDefaultAppState();
+    if (!raw || raw.length > 2 * 1024 * 1024) return getDefaultAppState();
     const parsed = JSON.parse(raw, (key, value) =>
       FORBIDDEN_KEYS.has(key) ? undefined : value
     ) as Partial<AppStateStorage>;

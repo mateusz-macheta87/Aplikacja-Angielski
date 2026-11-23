@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IllustrationKey } from '../../types/curriculum';
 import { ITEM_ART_MAP } from '../../data/storybookArt';
 
@@ -17,6 +17,10 @@ export const ItemIllustration: React.FC<ItemIllustrationProps> = ({
 }) => {
   const [imgError, setImgError] = useState(false);
   const art = ITEM_ART_MAP[kind];
+
+  useEffect(() => {
+    setImgError(false);
+  }, [kind]);
 
   // Primary: High-resolution bespoke watercolor picture-book illustration
   if (art && !imgError) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, Play, RotateCcw, ShieldCheck, Star, Timer, Volume2 } from 'lucide-react';
 import { LessonModule } from '../../types/curriculum';
 import { generateAudioQuizQuestions } from '../../engine/gameEngine';
@@ -46,23 +46,44 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
   const [p2Score, setP2Score] = useState(0);
   const [finished, setFinished] = useState(false);
 
-  const current = questions[idx % Math.max(1, questions.length)];
+  const scoreRef = useRef(score);
+  scoreRef.current = score;
+  const soundRef = useRef(soundEffectsEnabled);
+  soundRef.current = soundEffectsEnabled;
+  const onCompleteLightningRef = useRef(onCompleteLightning);
+  onCompleteLightningRef.current = onCompleteLightning;
+  const tabletopTimerRef = useRef<number | null>(null);
+
+  const current = questions.length > 0 ? questions[idx % questions.length] : undefined;
   const currentPlayer = idx % 2 === 0 ? 1 : 2;
 
   useEffect(() => {
+    return () => {
+      if (tabletopTimerRef.current !== null) {
+        clearTimeout(tabletopTimerRef.current);
+        tabletopTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Stable 1-second countdown timer that never resets when score changes
+  useEffect(() => {
     if (mode !== 'lightning' || !started || finished) return;
-    if (timeLeft <= 0) {
-      setFinished(true);
-      const earned = Math.max(1, Math.min(5, Math.ceil(score / 3)));
-      playToneEffect('fanfare', soundEffectsEnabled);
-      onCompleteLightning(score, earned);
-      return;
-    }
     const timer = window.setInterval(() => {
-      setTimeLeft((t) => t - 1);
+      setTimeLeft((t) => (t <= 1 ? 0 : t - 1));
     }, 1000);
     return () => clearInterval(timer);
-  }, [mode, started, finished, timeLeft, score, soundEffectsEnabled, onCompleteLightning]);
+  }, [mode, started, finished]);
+
+  // Complete Lightning session once timeLeft reaches 0
+  useEffect(() => {
+    if (mode !== 'lightning' || !started || finished || timeLeft > 0) return;
+    setFinished(true);
+    const finalScore = scoreRef.current;
+    const earned = Math.max(1, Math.min(5, Math.ceil(finalScore / 3)));
+    playToneEffect('fanfare', soundRef.current);
+    onCompleteLightningRef.current(finalScore, earned);
+  }, [mode, started, finished, timeLeft]);
 
   useEffect(() => {
     if (started && !finished && current) {
@@ -121,7 +142,11 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
     if (who === 'child') setP1Score((s) => s + 1);
     else setP2Score((s) => s + 1);
 
-    window.setTimeout(() => {
+    if (tabletopTimerRef.current !== null) {
+      clearTimeout(tabletopTimerRef.current);
+    }
+    tabletopTimerRef.current = window.setTimeout(() => {
+      tabletopTimerRef.current = null;
       setRoundWinner(null);
       if (idx + 1 >= questions.length) {
         setFinished(true);
@@ -134,6 +159,10 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
   };
 
   const handleRestart = () => {
+    if (tabletopTimerRef.current !== null) {
+      clearTimeout(tabletopTimerRef.current);
+      tabletopTimerRef.current = null;
+    }
     setSeed((s) => s + 41);
     setIdx(0);
     setTimeLeft(60);
@@ -146,6 +175,28 @@ export const LightningDuelView: React.FC<LightningDuelViewProps> = ({
   };
 
   const title = mode === 'lightning' ? 'Błyskawica (60s)' : 'Pojedynek z rodzicem';
+
+  if (questions.length === 0 || !current) {
+    return (
+      <StorybookLessonShell title={title} module={module} onBackToMap={onBackToMap}>
+        <div className="storybook-card rounded-[32px] p-8 text-center max-w-xl mx-auto">
+          <p className="font-display text-xl font-bold text-[#3E2F2B]">
+            Za mało haseł do tej gry!
+          </p>
+          <p className="mt-2 text-sm font-semibold text-[#6E5B4F]">
+            Dodaj co najmniej 2 słówka w tym module, aby uruchomić Błyskawicę lub Pojedynek.
+          </p>
+          <button
+            type="button"
+            onClick={onBackToMap}
+            className="mt-5 btn-puffy-green min-h-[48px] px-7 rounded-full font-display font-bold"
+          >
+            Wróć na mapę
+          </button>
+        </div>
+      </StorybookLessonShell>
+    );
+  }
 
   if (!started) {
     return (

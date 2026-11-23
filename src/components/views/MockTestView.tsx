@@ -78,6 +78,32 @@ export const MockTestView: React.FC<MockTestViewProps> = ({
     setStarted(true);
   };
 
+  if (questions.length === 0) {
+    return (
+      <StorybookLessonShell
+        title="Sprawdzian próbny"
+        module={module}
+        onBackToMap={onBackToMap}
+      >
+        <div className="max-w-xl mx-auto storybook-card rounded-[32px] p-8 text-center">
+          <p className="font-display text-xl font-bold text-[#3E2F2B]">
+            Za mało haseł na sprawdzian!
+          </p>
+          <p className="mt-2 text-sm font-semibold text-[#6E5B4F]">
+            Ten moduł potrzebuje co najmniej 2 słówek lub zdań, aby wygenerować próbny sprawdzian.
+          </p>
+          <button
+            type="button"
+            onClick={onBackToMap}
+            className="mt-5 btn-puffy-green min-h-[48px] px-7 rounded-full font-display font-bold"
+          >
+            Wróć na mapę
+          </button>
+        </div>
+      </StorybookLessonShell>
+    );
+  }
+
   if (!started) {
     return (
       <StorybookLessonShell

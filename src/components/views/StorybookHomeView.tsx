@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Lock, Star, Volume2, VolumeX } from 'lucide-react';
 import { ChildScreen, LessonModule, ModuleProgress } from '../../types/curriculum';
 import {
@@ -38,8 +38,11 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
   onSelectModule,
 }) => {
   const [holdProgress, setHoldProgress] = useState(0);
+  const [holdHintVisible, setHoldHintVisible] = useState(false);
   const [sceneErr, setSceneErr] = useState(false);
   const holdTimerRef = useRef<number | null>(null);
+  const holdHintTimerRef = useRef<number | null>(null);
+  const holdCompletedRef = useRef(false);
 
   const availableStars = getAvailableStars(progress);
   const calendarDays = getLast7DaysCalendar(progress.completedDates);
@@ -49,26 +52,49 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
 
   const isEnglishClothes = activeModule.id === 'en-unit1-mr-beetle-clothes';
 
+  useEffect(() => {
+    return () => {
+      if (holdTimerRef.current !== null) {
+        clearInterval(holdTimerRef.current);
+        holdTimerRef.current = null;
+      }
+      if (holdHintTimerRef.current !== null) {
+        clearTimeout(holdHintTimerRef.current);
+        holdHintTimerRef.current = null;
+      }
+    };
+  }, []);
+
   const startParentHold = () => {
-    setHoldProgress(15);
+    if (holdTimerRef.current !== null) return;
+    holdCompletedRef.current = false;
+    setHoldHintVisible(false);
+    setHoldProgress(12);
     const start = Date.now();
     holdTimerRef.current = window.setInterval(() => {
       const elapsed = Date.now() - start;
       const pct = Math.min(100, Math.round((elapsed / 1200) * 100));
       setHoldProgress(pct);
       if (pct >= 100) {
-        stopParentHold();
+        holdCompletedRef.current = true;
+        stopParentHold(false);
         onOpenScreen({ type: 'parent' });
       }
     }, 60);
   };
 
-  const stopParentHold = () => {
+  const stopParentHold = (showHintIfIncomplete = true) => {
+    const wasHolding = holdTimerRef.current !== null;
     if (holdTimerRef.current !== null) {
       clearInterval(holdTimerRef.current);
       holdTimerRef.current = null;
     }
     setHoldProgress(0);
+    if (showHintIfIncomplete && wasHolding && !holdCompletedRef.current) {
+      setHoldHintVisible(true);
+      if (holdHintTimerRef.current !== null) clearTimeout(holdHintTimerRef.current);
+      holdHintTimerRef.current = window.setTimeout(() => setHoldHintVisible(false), 2400);
+    }
   };
 
   const handleHeroSpeak = () => {
@@ -546,13 +572,27 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
           <div className="flex flex-wrap items-center gap-2.5 max-w-full">
             <button
               type="button"
-              onMouseDown={startParentHold}
-              onMouseUp={stopParentHold}
-              onMouseLeave={stopParentHold}
-              onTouchStart={startParentHold}
-              onTouchEnd={stopParentHold}
-              onClick={() => onOpenScreen({ type: 'parent' })}
-              className="relative overflow-hidden min-h-[46px] max-w-full px-5 py-2.5 rounded-full bg-white border-2 border-dashed border-[#D3B56E] text-sm font-bold text-[#5C4118] hover:bg-[#FFFDF5] inline-flex items-center gap-2 text-left"
+              onPointerDown={(e) => {
+                if (e.button !== 0 && e.pointerType === 'mouse') return;
+                startParentHold();
+              }}
+              onPointerUp={() => stopParentHold(true)}
+              onPointerLeave={() => stopParentHold(false)}
+              onPointerCancel={() => stopParentHold(false)}
+              onKeyDown={(e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && !e.repeat) {
+                  e.preventDefault();
+                  startParentHold();
+                }
+              }}
+              onKeyUp={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  stopParentHold(true);
+                }
+              }}
+              aria-label="Panel rodzica — przytrzymaj przez ponad sekundę, aby otworzyć"
+              className="relative overflow-hidden select-none min-h-[46px] max-w-full px-5 py-2.5 rounded-full bg-white border-2 border-dashed border-[#D3B56E] text-sm font-bold text-[#5C4118] hover:bg-[#FFFDF5] inline-flex items-center gap-2 text-left"
             >
               {holdProgress > 0 && (
                 <span
@@ -562,9 +602,14 @@ export const StorybookHomeView: React.FC<StorybookHomeViewProps> = ({
               )}
               <Lock className="w-4 h-4 relative z-10 shrink-0" aria-hidden="true" />
               <span className="relative z-10">
-                Panel rodzica (moduły, JSON, architektura)
+                Panel rodzica (przytrzymaj 1,2 s)
               </span>
             </button>
+            {holdHintVisible && (
+              <span className="text-xs font-bold text-[#8A5A12]">
+                Przytrzymaj przycisk chwilę dłużej, aby wejść do Panelu rodzica.
+              </span>
+            )}
           </div>
 
           {modules.length > 1 && (

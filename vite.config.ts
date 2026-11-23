@@ -47,8 +47,23 @@ export default defineConfig(() => {
         },
         workbox: {
           maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
-          globPatterns: ['**/*.{js,css,html,ico,png,jpg,svg,mp3,woff,woff2}'],
+          // Precache core app shell & offline British English audio sprites (~7 MB instead of 65 MB)
+          globPatterns: ['**/*.{js,css,html,ico,svg,mp3,woff,woff2}', 'pwa-*.png', 'apple-touch-icon.png'],
           runtimeCaching: [
+            {
+              urlPattern: /\/(?:src\/assets\/images|assets\/aistudio)\/.*\.(?:png|jpe?g|webp)$/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'storybook-images-cache',
+                expiration: {
+                  maxEntries: 120,
+                  maxAgeSeconds: 60 * 60 * 24 * 30,
+                },
+                cacheableResponse: {
+                  statuses: [0, 200],
+                },
+              },
+            },
             {
               urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
               handler: 'CacheFirst',
@@ -94,8 +109,9 @@ export default defineConfig(() => {
           if (error) {
             return;
           }
-          const distDir = path.resolve(__dirname, 'dist');
-          const srcAssets = path.resolve(__dirname, 'src/assets');
+          const rootDir = import.meta.dirname;
+          const distDir = path.resolve(rootDir, 'dist');
+          const srcAssets = path.resolve(rootDir, 'src/assets');
           const distAssets = path.resolve(distDir, 'src/assets');
           if (fs.existsSync(distDir) && fs.existsSync(srcAssets)) {
             fs.cpSync(srcAssets, distAssets, {recursive: true, force: true});
@@ -105,7 +121,7 @@ export default defineConfig(() => {
     ],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, '.'),
+        '@': path.resolve(import.meta.dirname, '.'),
       },
     },
     server: {

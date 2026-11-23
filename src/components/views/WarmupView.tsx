@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, ChevronDown, ChevronUp, Play, RotateCcw, Sparkles, Volume2 } from 'lucide-react';
 import { LessonModule, ModuleProgress } from '../../types/curriculum';
 import {
@@ -42,8 +42,18 @@ export const WarmupView: React.FC<WarmupViewProps> = ({
   const [records, setRecords] = useState<WarmupAnswerRecord[]>([]);
   const [finished, setFinished] = useState(false);
   const [parentOpen, setParentOpen] = useState(false);
+  const advanceTimerRef = useRef<number | null>(null);
 
   const current = questions[idx];
+
+  useEffect(() => {
+    return () => {
+      if (advanceTimerRef.current !== null) {
+        clearTimeout(advanceTimerRef.current);
+        advanceTimerRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!finished && current) {
@@ -68,7 +78,9 @@ export const WarmupView: React.FC<WarmupViewProps> = ({
       const updatedRecords = [...records, nextRecord];
       setRecords(updatedRecords);
 
-      window.setTimeout(() => {
+      if (advanceTimerRef.current !== null) clearTimeout(advanceTimerRef.current);
+      advanceTimerRef.current = window.setTimeout(() => {
+        advanceTimerRef.current = null;
         setSelectedId(null);
         setWrongAttempt(false);
         if (idx + 1 >= questions.length) {

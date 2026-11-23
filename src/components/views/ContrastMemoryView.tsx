@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { CheckCircle2, Play, RotateCcw, XCircle } from 'lucide-react';
 import { LessonModule } from '../../types/curriculum';
 import { seededShuffle } from '../../engine/gameEngine';
@@ -81,11 +81,33 @@ export const ContrastMemoryView: React.FC<ContrastMemoryViewProps> = ({
   const [matchedPairIds, setMatchedPairIds] = useState<string[]>([]);
   const [moves, setMoves] = useState(0);
   const [lockBoard, setLockBoard] = useState(false);
+  const sortTimerRef = useRef<number | null>(null);
+  const memTimerRef = useRef<number | null>(null);
+
+  const clearPendingTimers = () => {
+    if (sortTimerRef.current !== null) {
+      clearTimeout(sortTimerRef.current);
+      sortTimerRef.current = null;
+    }
+    if (memTimerRef.current !== null) {
+      clearTimeout(memTimerRef.current);
+      memTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return clearPendingTimers;
+  }, []);
+
+  useEffect(() => {
+    clearPendingTimers();
+    setLockBoard(false);
+  }, [subMode]);
 
   const currentSortItem = sortingItems[sortIdx];
 
   const handleSortChoice = (bucketId: string) => {
-    if (!currentSortItem || sortDone || !module.sortingGame) return;
+    if (!currentSortItem || sortDone || !module.sortingGame || sortFeedback !== null) return;
     const isCorrect = currentSortItem.bucketId === bucketId;
     const nextCorrect = isCorrect ? sortCorrect + 1 : sortCorrect;
     if (isCorrect) {
@@ -102,7 +124,9 @@ export const ContrastMemoryView: React.FC<ContrastMemoryViewProps> = ({
       });
     }
 
-    setTimeout(() => {
+    if (sortTimerRef.current !== null) clearTimeout(sortTimerRef.current);
+    sortTimerRef.current = window.setTimeout(() => {
+      sortTimerRef.current = null;
       if (sortIdx + 1 >= sortingItems.length) {
         const ratio = nextCorrect / sortingItems.length;
         const mapStars = ratio >= 0.8 ? 3 : ratio >= 0.5 ? 2 : 1;
@@ -140,7 +164,9 @@ export const ContrastMemoryView: React.FC<ContrastMemoryViewProps> = ({
         }
       } else {
         setLockBoard(true);
-        setTimeout(() => {
+        if (memTimerRef.current !== null) clearTimeout(memTimerRef.current);
+        memTimerRef.current = window.setTimeout(() => {
+          memTimerRef.current = null;
           setFlippedUids([]);
           setLockBoard(false);
         }, 850);

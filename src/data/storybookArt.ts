@@ -42,14 +42,14 @@ export interface ItemArtEntry {
 
 export const ISKIERKA_OUTFIT_PORTRAIT: Record<string, string> = {
   'acc-bow': '/src/assets/images/portrait_iskierka_bow.jpg',
-  'acc-flowers': '/src/assets/images/iskierka_wear_flowers_1795438408571.jpg',
+  'acc-flowers': '/src/assets/images/portrait_iskierka_flowers.jpg',
   'acc-cap': '/src/assets/images/portrait_iskierka_cap.jpg',
   'acc-crown': '/src/assets/images/portrait_iskierka_crown.jpg',
   'acc-winter-hat': '/src/assets/images/iskierka_wear_winter_hat_1795437671829.jpg',
   'acc-glasses': '/src/assets/images/iskierka_wear_glasses_1795437673180.jpg',
   'acc-scarf': '/src/assets/images/iskierka_wear_scarf_1795437671470.jpg',
   'acc-wings': '/src/assets/images/portrait_iskierka_wings.jpg',
-  'acc-cape': '/src/assets/images/iskierka_wear_cape_1795438439972.jpg',
+  'acc-cape': '/src/assets/images/portrait_iskierka_cape.jpg',
 };
 
 export const ISKIERKA_OUTFIT_STAGE: Record<string, string> = {
@@ -67,18 +67,6 @@ export const ISKIERKA_OUTFIT_STAGE: Record<string, string> = {
 // Full cohesive boutique-scene illustrations (4:3) rendered edge-to-edge without any cutout overlay
 export const ISKIERKA_OUTFIT_SCENE: Record<string, string> = {
   'acc-cap': '/assets/aistudio/Gemini_Generated_Image_ij4b0vij4b0vij4b_ba41ed95.jpg',
-};
-
-export const WARDROBE_CUTOUT_MAP: Record<string, string> = {
-  'acc-bow': '/src/assets/images/cutout_acc_bow.png',
-  'acc-flowers': '/src/assets/images/cutout_acc_flower_arc.png',
-  'acc-cap': '/src/assets/images/cutout_acc_cap.png',
-  'acc-crown': '/src/assets/images/cutout_acc_crown.png',
-  'acc-winter-hat': '/src/assets/images/cutout_acc_winter_hat.png',
-  'acc-glasses': '/src/assets/images/cutout_acc_glasses.png',
-  'acc-scarf': '/src/assets/images/cutout_acc_scarf.png',
-  'acc-wings': '/src/assets/images/cutout_acc_wings.png',
-  'acc-cape': '/src/assets/images/cutout_acc_cape.png',
 };
 
 export const WARDROBE_ART_MAP: Record<string, ItemArtEntry> = {
