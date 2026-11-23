@@ -6,6 +6,17 @@ import {
   VocabCategory,
   VocabItem,
 } from '../types/curriculum';
+import { ITEM_ART_MAP } from '../data/storybookArt';
+
+/**
+ * What the child actually sees for a word: the picture file when there is one
+ * (several words share a picture, e.g. "hot" and "sunny" both show the sun),
+ * otherwise the drawn illustration in its colour.
+ */
+export function getVisualKey(item: Pick<VocabItem, 'illustration' | 'defaultColor'>): string {
+  const art = ITEM_ART_MAP[item.illustration];
+  return art ? `img:${art.src}` : `svg:${item.illustration}:${item.defaultColor ?? ''}`;
+}
 
 export function formatStarsPl(count: number): string {
   const n = Math.abs(Math.floor(count));
@@ -67,6 +78,23 @@ export function getLast7DaysCalendar(
     });
   }
   return days;
+}
+
+/**
+ * Days in a row with at least one finished activity. Today counts once done;
+ * until then a streak that ended yesterday is still alive.
+ */
+export function getCurrentStreak(completedDates: readonly string[], referenceDate = new Date()): number {
+  const done = new Set(completedDates);
+  const d = new Date(referenceDate);
+  d.setHours(12, 0, 0, 0);
+  if (!done.has(formatLocalDateKey(d))) d.setDate(d.getDate() - 1);
+  let streak = 0;
+  while (streak < 400 && done.has(formatLocalDateKey(d))) {
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
 }
 
 export function checkSpellingAnswer(input: string, targetWord: string): boolean {
@@ -212,11 +240,20 @@ export function generateAudioQuizQuestions(
 
     const sameCat = module.vocabulary.filter((v) => v.id !== item.id && v.category === item.category);
     const otherCat = module.vocabulary.filter((v) => v.id !== item.id && v.category !== item.category);
-    const distractorSource = sameCat.length >= 3 ? sameCat : [...sameCat, ...otherCat];
-    const distractors = seededShuffle(distractorSource, seed + idx * 17).slice(
-      0,
-      Math.min(3, distractorSource.length)
-    );
+    // Never offer two answers that look the same: the child could not tell them apart.
+    const usedVisuals = new Set([getVisualKey(item)]);
+    const pickDistinct = (candidates: VocabItem[], into: VocabItem[], salt: number) => {
+      for (const cand of seededShuffle(candidates, seed + idx * salt)) {
+        if (into.length >= 3) break;
+        const key = getVisualKey(cand);
+        if (usedVisuals.has(key)) continue;
+        usedVisuals.add(key);
+        into.push(cand);
+      }
+    };
+    const distractors: VocabItem[] = [];
+    pickDistinct(sameCat, distractors, 17);
+    if (distractors.length < 3) pickDistinct(otherCat, distractors, 19);
 
     const quizOptions = seededShuffle([item, ...distractors], seed + idx * 31).map((opt) => ({
       id: opt.id,
